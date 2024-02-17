@@ -9,6 +9,7 @@ import { useParams } from "next/navigation";
 import Wrapper from "@/components/Wrapper";
 import { FadeIn } from "@/components/FadeIn";
 import Image from "next/image";
+import { useNFTCollectibles } from "@/lib/hooks/useNFTCollectibles";
 
 // const FormatTime = ({ timeZone }: { timeZone: string }) => {
 //   const [currentTime, setCurrentTime] = useState("");
@@ -80,6 +81,27 @@ const Page: React.FC = () => {
   // Get the address from the router params
   const router = useParams();
   const address = router.address as string;
+  const {
+    loading: nftLoading,
+    error: nftError,
+    data: nfts,
+  } = useNFTCollectibles(address);
+
+  const processAllNfts = () => {
+    let nftData: any = [];
+    if (!nfts[0]) return [];
+    if (nfts[0]?.maticNfts?.ownedNfts)
+      nftData = [...nftData, ...nfts[0].maticNfts.ownedNfts];
+    if (nfts[0]?.mainnetNfts?.ownedNfts)
+      nftData = [...nftData, ...nfts[0].mainnetNfts.ownedNfts];
+    if (nfts[0]?.optimismNfts?.ownedNfts)
+      nftData = [...nftData, ...nfts[0].optimismNfts.ownedNfts];
+    return nftData;
+  };
+  const allNfts = processAllNfts().filter(
+    (nft: any) => nft.tokenType !== "ERC1155"
+  );
+  console.log("allNfts", allNfts);
 
   // Fetch the profile data using Apollo useQuery hook
   const { loading, error, data } = useQuery(profileQuery, {
