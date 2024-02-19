@@ -102,7 +102,6 @@ const Page: React.FC = () => {
   const allNfts = processAllNfts().filter(
     (nft: any) => nft.tokenType !== "ERC1155"
   );
-  console.log("allNfts", allNfts);
 
   // Fetch the profile data using Apollo useQuery hook
   const { loading, error, data } = useQuery(profileQuery, {
