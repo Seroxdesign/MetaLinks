@@ -10,6 +10,7 @@ import Wrapper from "@/components/Wrapper";
 import { FadeIn } from "@/components/FadeIn";
 import Image from "next/image";
 import { useNFTCollectibles } from "@/lib/hooks/useNFTCollectibles";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // const FormatTime = ({ timeZone }: { timeZone: string }) => {
 //   const [currentTime, setCurrentTime] = useState("");
@@ -144,17 +145,48 @@ const Page: React.FC = () => {
               {profile?.name ?? ""}
             </h1>
             <h3 className="text-base text-white">@{profile?.username ?? ""}</h3>
-            <p className="text-white text-center text-base text-left mt-4 mb-12">
+            <p className="text-white text-center text-base my-8">
               {profile?.description ?? ""}
             </p>
-            {data?.player[0]?.links.map((link: any, index: number) => (
-              <LinkCard
-                key={link.name}
-                href={link.url}
-                title={link.name}
-                image="/LinkDefaultIcon.svg"
-              />
-            ))}
+            <Tabs defaultValue="links" className="w-full">
+              <TabsList className="flex items-center justify-center">
+                <TabsTrigger value="links">Links</TabsTrigger>
+                <TabsTrigger value="nfts">NFTs</TabsTrigger>
+              </TabsList>
+              <TabsContent
+                value="links"
+                className="w-full mt-8 flex flex-col items-center justify-center"
+              >
+                {data?.player[0]?.links.map((link: any, index: number) => (
+                  <LinkCard
+                    key={link.name}
+                    href={link.url}
+                    title={link.name}
+                    image="/LinkDefaultIcon.svg"
+                  />
+                ))}
+              </TabsContent>
+              <TabsContent
+                value="nfts"
+                className="grid md:grid-cols-3 grid-cols-2 gap-3 max-w-96 place-self-center mx-auto"
+              >
+                {nftLoading && <p>Loading...</p>}
+                {allNfts.map((nft) => {
+                  const imageUri = nft.image.cachedUrl;
+
+                  return (
+                    <Image
+                      key={imageUri}
+                      src={imageUri}
+                      alt="nft-item"
+                      className="h-auto w-full max-w-full rounded-md min-h-32"
+                      width={128}
+                      height={128}
+                    />
+                  );
+                })}
+              </TabsContent>
+            </Tabs>
           </div>
         </FadeIn>
       </Wrapper>
