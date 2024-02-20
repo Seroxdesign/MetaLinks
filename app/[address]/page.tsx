@@ -170,7 +170,7 @@ const Page: React.FC = () => {
                 className="grid md:grid-cols-3 grid-cols-2 gap-3 max-w-96 place-self-center mx-auto"
               >
                 {nftLoading && <p>Loading...</p>}
-                {allNfts.map((nft) => {
+                {allNfts.map((nft: any) => {
                   const imageUri = nft.image.cachedUrl;
 
                   return (

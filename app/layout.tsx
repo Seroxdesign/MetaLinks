@@ -6,9 +6,8 @@ import { client } from "@/services/apollo";
 import { ApolloProvider } from "@apollo/client";
 import { cn } from "@/lib/utils";
 import "./globals.css";
-import Navbar from "@/components/Navbar";
 
-export const fontSans = FontSans({
+const fontSans = FontSans({
   subsets: ["latin"],
   variable: "--font-sans",
 });
