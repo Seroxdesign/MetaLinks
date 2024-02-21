@@ -7,6 +7,7 @@ import { ApolloProvider } from "@apollo/client";
 import { cn } from "@/lib/utils";
 import "./globals.css";
 import Script from "next/script";
+import { Web3Provider } from "@/services/web3Provider";
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -20,39 +21,41 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <ApolloProvider client={client}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem
-          disableTransitionOnChange
-        >
-         <Script
-            src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GAID}`}
-            strategy="afterInteractive"
-          />
-          <Script id="google-analytics" strategy="afterInteractive">
-            {`
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){window.dataLayer.push(arguments);}
-              gtag('js', new Date());
-
-              gtag('config', '${process.env.NEXT_PUBLIC_GAID}', {
-                page_path: window.location.pathname,
-              });
-            `}
-          </Script>
-          <body
-            className={cn(
-              "min-h-screen bg-background font-sans antialiased",
-              fontSans.variable
-            )}
+      <Web3Provider>
+        <ApolloProvider client={client}>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="dark"
+            enableSystem
+            disableTransitionOnChange
           >
-            {/* <Navbar /> */}
-            {children}
-          </body>
-        </ThemeProvider>
-      </ApolloProvider>
+          <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GAID}`}
+              strategy="afterInteractive"
+            />
+            <Script id="google-analytics" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){window.dataLayer.push(arguments);}
+                gtag('js', new Date());
+
+                gtag('config', '${process.env.NEXT_PUBLIC_GAID}', {
+                  page_path: window.location.pathname,
+                });
+              `}
+            </Script>
+            <body
+              className={cn(
+                "min-h-screen bg-background font-sans antialiased",
+                fontSans.variable
+              )}
+            >
+              {/* <Navbar /> */}
+              {children}
+            </body>
+          </ThemeProvider>
+        </ApolloProvider>
+      </Web3Provider>
     </html>
   );
 }

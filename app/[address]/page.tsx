@@ -11,6 +11,7 @@ import { FadeIn } from "@/components/FadeIn";
 import Image from "next/image";
 import { useNFTCollectibles } from "@/lib/hooks/useNFTCollectibles";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ConnectKitButton } from "connectkit";
 
 // const FormatTime = ({ timeZone }: { timeZone: string }) => {
 //   const [currentTime, setCurrentTime] = useState("");
@@ -129,8 +130,11 @@ const Page: React.FC = () => {
         className="absolute z-[-1] top-0 left-0 object-cover md:h-96 min-h-48 w-full"
       />
       <Wrapper>
+        {/* <ConnectKitButton /> */}
         <FadeIn>
+        
           <div className="flex items-center flex-col mx-auto w-full mt-16 md:mt-32 justify-center px-2 md:px-8">
+  
             <div className="h-40 w-40 md:h-72 md:w-72">
               <img
                 className="rounded-full h-40 w-40 md:h-72  md:w-72 border border-[12px] border-[rgba(255,255,255,0.04)]"
@@ -156,6 +160,7 @@ const Page: React.FC = () => {
                 value="links"
                 className="w-full mt-8 flex flex-col items-center justify-center"
               >
+                  
                 {data?.player[0]?.links.map((link: any, index: number) => (
                   <LinkCard
                     key={link.name}
