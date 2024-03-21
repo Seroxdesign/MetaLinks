@@ -15,6 +15,18 @@ const nextConfig = {
             port: '',
             pathname: '/**',
           },
+          {
+            protocol: 'https',
+            hostname: 'w3s.link',
+            port: '',
+            pathname: '/**',
+          },
+          {
+            protocol: 'https',
+            hostname: 'ipfs.io',
+            port: '',
+            pathname: '/**',
+          },
         ],
       },
 };
