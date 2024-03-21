@@ -11,36 +11,8 @@ import { FadeIn } from "@/components/FadeIn";
 import Image from "next/image";
 import { useNFTCollectibles } from "@/lib/hooks/useNFTCollectibles";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-// const FormatTime = ({ timeZone }: { timeZone: string }) => {
-//   const [currentTime, setCurrentTime] = useState("");
-
-//   const updateCurrentTime = () => {
-//     const formattedTime = new Intl.DateTimeFormat("en-US", {
-//       timeZone,
-//       hour12: true,
-//       hour: "2-digit",
-//       minute: "2-digit",
-//       second: "2-digit",
-//     }).format(new Date());
-//     setCurrentTime(formattedTime);
-//   };
-
-//   useEffect(() => {
-//     updateCurrentTime();
-
-//     const intervalId = setInterval(() => {
-//       updateCurrentTime();
-//     }, 1000);
-
-//     // Clean up the interval on component unmount
-//     return () => clearInterval(intervalId);
-//   }, []);
-
-//   return (
-//     <p className="text-left text-6xl mt-1 text-lightBlackTxt">{currentTime}</p>
-//   );
-// };
+import DonateCrypto from "@/components/DonateCrypto";
+import { ConnectKitButton } from "connectkit";
 
 function LinkCard({
   href,
@@ -59,14 +31,14 @@ function LinkCard({
       className="flex items-center p-1 w-full hover:scale-105 transition-all bg-purple rounded-xl mb-3 max-w-md"
     >
       <div className="flex items-center text-center max-h-12 h-12 w-full">
-        <div className="w-4 h-4 ml-6">
+        <div className="w-6 h-6 ml-6">
           {image && (
             <Image
               className="rounded-sm"
               alt={title}
               src={image}
-              width={16}
-              height={16}
+              width={24}
+              height={24}
             />
           )}
         </div>
@@ -119,6 +91,7 @@ const Page: React.FC = () => {
 
   // Render the profile information
   const profile = data?.player[0]?.profile;
+  console.log("data", data);
   return (
     <main>
       <Image
@@ -128,6 +101,9 @@ const Page: React.FC = () => {
         width="2000"
         className="absolute z-[-1] top-0 left-0 object-cover md:h-96 min-h-48 w-full"
       />
+      <div className="fixed top-3 right-3 z-10">
+        <ConnectKitButton />
+      </div>
       <Wrapper>
         <FadeIn>
           <div className="flex items-center flex-col mx-auto w-full mt-16 md:mt-32 justify-center px-2 md:px-8">
@@ -151,39 +127,62 @@ const Page: React.FC = () => {
               <TabsList className="flex items-center justify-center">
                 <TabsTrigger value="links">Links</TabsTrigger>
                 <TabsTrigger value="nfts">NFTs</TabsTrigger>
+                <TabsTrigger value="guilds">Guilds</TabsTrigger>
+                <TabsTrigger value="donate">Donate</TabsTrigger>
               </TabsList>
-              <TabsContent
-                value="links"
-                className="w-full mt-8 flex flex-col items-center justify-center"
-              >
-                {data?.player[0]?.links.map((link: any, index: number) => (
-                  <LinkCard
-                    key={link.name}
-                    href={link.url}
-                    title={link.name}
-                    image="/LinkDefaultIcon.svg"
-                  />
-                ))}
-              </TabsContent>
-              <TabsContent
-                value="nfts"
-                className="grid md:grid-cols-3 grid-cols-2 gap-3 max-w-96 place-self-center mx-auto"
-              >
-                {nftLoading && <p>Loading...</p>}
-                {allNfts.map((nft: any) => {
-                  const imageUri = nft.image.cachedUrl;
-
-                  return (
-                    <Image
-                      key={imageUri}
-                      src={imageUri}
-                      alt="nft-item"
-                      className="h-auto w-full max-w-full rounded-md min-h-32"
-                      width={128}
-                      height={128}
+              <TabsContent value="links">
+                <div className="w-full mt-8 flex flex-col items-center justify-center">
+                  {data?.player[0]?.links.map((link: any, index: number) => (
+                    <LinkCard
+                      key={link.name}
+                      href={link.url}
+                      title={link.name}
+                      image="/LinkDefaultIcon.svg"
                     />
-                  );
-                })}
+                  ))}
+                </div>
+              </TabsContent>
+              <TabsContent value="nfts">
+                <div className="grid md:grid-cols-3 grid-cols-2 gap-3 max-w-96 place-self-center mx-auto mt-8">
+                  {nftLoading && <p>Loading...</p>}
+                  {allNfts.map((nft: any) => {
+                    const imageUri = nft.image.cachedUrl;
+
+                    return (
+                      <Image
+                        key={imageUri}
+                        src={imageUri}
+                        alt="nft-item"
+                        className="h-auto w-full max-w-full rounded-md min-h-32"
+                        width={128}
+                        height={128}
+                      />
+                    );
+                  })}
+                </div>
+              </TabsContent>
+              <TabsContent value="guilds">
+                <div className="w-full mt-8 flex flex-col items-center justify-center">
+                  {data?.player[0]?.guilds.map(
+                    ({ Guild: guild }: any, index: number) => (
+                      <LinkCard
+                        key={guild.name}
+                        href={"/"}
+                        title={guild.name}
+                        image={toHTTP(guild.logo)}
+                      />
+                    )
+                  )}
+                </div>
+              </TabsContent>
+              <TabsContent value="donate">
+                <div className="w-full mt-8 flex items-center justify-center">
+                  <DonateCrypto
+                    ethereumAddress={
+                      data?.player[0]?.ethereumAddress as `0x${string}`
+                    }
+                  />
+                </div>
               </TabsContent>
             </Tabs>
           </div>

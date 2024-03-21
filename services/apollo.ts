@@ -12,6 +12,7 @@ export const client = new ApolloClient({
 export const profileQuery = gql`
   query Profile($address: String!) {
     player(where: { ethereumAddress: { _ilike: $address } }) {
+      ethereumAddress
       links {
         name
         type
