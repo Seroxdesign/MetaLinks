@@ -80,10 +80,7 @@ export default function RootLayout({
             `}
                 </Script>
                 <body
-                  className={cn(
-                    "min-h-screen bg-background font-sans antialiased",
-                    fontSans.variable
-                  )}
+                  className={cn("font-sans antialiased", fontSans.variable)}
                 >
                   {/* <Navbar /> */}
                   {children}

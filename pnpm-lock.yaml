@@ -35,6 +35,9 @@ dependencies:
   '@radix-ui/react-tabs':
     specifier: ^1.0.4
     version: 1.0.4(@types/react-dom@18.2.18)(@types/react@18.2.51)(react-dom@18.2.0)(react@18.2.0)
+  '@tabler/icons-react':
+    specifier: ^3.1.0
+    version: 3.1.0(react@18.2.0)
   '@tanstack/react-query':
     specifier: ^5.28.6
     version: 5.28.6(react@18.2.0)
@@ -4049,6 +4052,19 @@ packages:
     resolution: {integrity: sha512-E4KcWTpoLHqwPHLxidpOqQbcrZVgi0rsmmZXUle1jXmJfuIf/UWpczUJ7MZZ5tlxytgJXyp0w4PGkkeLiuIdZw==}
     dependencies:
       tslib: 2.6.2
+    dev: false
+
+  /@tabler/icons-react@3.1.0(react@18.2.0):
+    resolution: {integrity: sha512-k/WTlax2vbj/LpxvaJ+BmaLAAhVUgyLj4Ftgaczz66tUSNzqrAZXCFdOU7cRMYPNVBqyqE2IdQd2rzzhDEJvkw==}
+    peerDependencies:
+      react: '>= 16'
+    dependencies:
+      '@tabler/icons': 3.1.0
+      react: 18.2.0
+    dev: false
+
+  /@tabler/icons@3.1.0:
+    resolution: {integrity: sha512-CpZGyS1IVJKFcv88yZ2sYZIpWWhQ6oy76BQKQ5SF0fGgOqgyqKdBGG/YGyyMW632on37MX7VqQIMTzN/uQqmFg==}
     dev: false
 
   /@tanstack/query-core@5.28.6:
