@@ -59,7 +59,7 @@ const Page: React.FC = () => {
     error: nftError,
     data: nfts,
   } = useNFTCollectibles(address);
-
+  console.log("nfts", nfts, nftError, nftLoading);
   const processAllNfts = () => {
     let nftData: any = [];
     if (!nfts[0]) return [];
@@ -83,7 +83,7 @@ const Page: React.FC = () => {
   if (loading) {
     return <p></p>;
   }
-
+  console.log('allNFTS', allNfts)
   // Render error message if user is not found
   if (error || !data?.player[0]) {
     return <p>Error: User not found</p>;
