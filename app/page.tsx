@@ -1,9 +1,8 @@
 "use client";
 
 import { BackgroundBeams } from "@/components/background-beams";
-import { HoverBorderGradient } from "@/components/hover-border-gradient";
 import SearchProfilesComponent from "@/components/SearchProfile";
-import { useRouter } from "next/navigation";
+import ClaimYourProfileButton from "@/components/ClaimProfile";
 
 export default function Home() {
   return (
@@ -26,23 +25,5 @@ export default function Home() {
       </div>
       <BackgroundBeams />
     </>
-  );
-}
-
-export function ClaimYourProfileButton() {
-  const router = useRouter();
-  return (
-    <div className="flex justify-center text-center">
-      <HoverBorderGradient
-        containerClassName="rounded-full"
-        as="button"
-        className="dark:bg-black bg-white text-black dark:text-white flex items-center space-x-2"
-        onClick={() => {
-          router.push("https://enter.metagame.wtf/");
-        }}
-      >
-        <span>Claim your profile</span>
-      </HoverBorderGradient>
-    </div>
   );
 }
