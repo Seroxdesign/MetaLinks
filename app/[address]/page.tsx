@@ -54,26 +54,26 @@ const Page: React.FC = () => {
   // Get the address from the router params
   const router = useParams();
   const address = router.address as string;
-  // const {
-  //   loading: nftLoading,
-  //   error: nftError,
-  //   data: nfts,
-  // } = useNFTCollectibles(address);
-  // console.log("nfts", nfts, nftError, nftLoading);
-  // const processAllNfts = () => {
-  //   let nftData: any = [];
-  //   if (!nfts[0]) return [];
-  //   if (nfts[0]?.maticNfts?.ownedNfts)
-  //     nftData = [...nftData, ...nfts[0].maticNfts.ownedNfts];
-  //   if (nfts[0]?.mainnetNfts?.ownedNfts)
-  //     nftData = [...nftData, ...nfts[0].mainnetNfts.ownedNfts];
-  //   if (nfts[0]?.optimismNfts?.ownedNfts)
-  //     nftData = [...nftData, ...nfts[0].optimismNfts.ownedNfts];
-  //   return nftData;
-  // };
-  // const allNfts = processAllNfts().filter(
-  //   (nft: any) => nft.tokenType !== "ERC1155"
-  // );
+  const {
+    loading: nftLoading,
+    error: nftError,
+    data: nfts,
+  } = useNFTCollectibles(address);
+
+  const processAllNfts = () => {
+    let nftData: any = [];
+    if (!nfts[0]) return [];
+    if (nfts[0]?.maticNfts?.ownedNfts)
+      nftData = [...nftData, ...nfts[0].maticNfts.ownedNfts];
+    if (nfts[0]?.mainnetNfts?.ownedNfts)
+      nftData = [...nftData, ...nfts[0].mainnetNfts.ownedNfts];
+    if (nfts[0]?.optimismNfts?.ownedNfts)
+      nftData = [...nftData, ...nfts[0].optimismNfts.ownedNfts];
+    return nftData;
+  };
+  const allNfts = processAllNfts().filter(
+    (nft: any) => nft.tokenType !== "ERC1155"
+  );
 
   // Fetch the profile data using Apollo useQuery hook
   const { loading, error, data } = useQuery(profileQuery, {
@@ -83,7 +83,7 @@ const Page: React.FC = () => {
   if (loading) {
     return <p></p>;
   }
-  // console.log('allNFTS', allNfts)
+
   // Render error message if user is not found
   if (error || !data?.player[0]) {
     return <p>Error: User not found</p>;
@@ -143,7 +143,7 @@ const Page: React.FC = () => {
                 </div>
               </TabsContent>
               <TabsContent value="nfts">
-                {/* <div className="grid md:grid-cols-3 grid-cols-2 gap-3 max-w-96 place-self-center mx-auto mt-8">
+                <div className="grid md:grid-cols-3 grid-cols-2 gap-3 max-w-96 place-self-center mx-auto mt-8">
                   {nftLoading && <p>Loading...</p>}
                   {allNfts.map((nft: any) => {
                     const imageUri = nft.image.cachedUrl;
@@ -159,7 +159,7 @@ const Page: React.FC = () => {
                       />
                     );
                   })}
-                </div> */}
+                </div>
               </TabsContent>
               <TabsContent value="guilds">
                 <div className="w-full mt-8 flex flex-col items-center justify-center">
