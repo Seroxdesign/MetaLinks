@@ -35,3 +35,47 @@ export const profileQuery = gql`
     }
   }
 `;
+
+export const searchProfiles = gql`
+  query SearchPlayers(
+    $search: String!
+    $forLoginDisplay: Boolean! = false
+    $limit: Int = 20
+  ) {
+    player(
+      where: {
+        _or: [
+          {
+            profile: {
+              username: { _ilike: $search }
+              name: { _ilike: $search }
+            }
+          }
+          { ethereumAddress: { _ilike: $search } }
+        ]
+      }
+      limit: $limit
+    ) {
+      ethereumAddress
+      links {
+        name
+        type
+        url
+      }
+      profile {
+        username
+        name
+        profileImageURL
+        description
+        timeZone
+      }
+      guilds {
+        Guild {
+          guildname
+          name
+          logo
+        }
+      }
+    }
+  }
+`;
