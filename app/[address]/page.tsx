@@ -11,8 +11,8 @@ import { FadeIn } from "@/components/FadeIn";
 import Image from "next/image";
 import { useNFTCollectibles } from "@/lib/hooks/useNFTCollectibles";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import DonateCrypto from "@/components/DonateCrypto";
-import { ConnectKitButton } from "connectkit";
+// import DonateCrypto from "@/components/DonateCrypto";
+// import { ConnectKitButton } from "connectkit";
 
 function LinkCard({
   href,
@@ -101,9 +101,9 @@ const Page: React.FC = () => {
         width="2000"
         className="absolute z-[-1] top-0 left-0 object-cover md:h-96 min-h-48 w-full"
       />
-      <div className="fixed top-3 right-3 z-10">
+      {/* <div className="fixed top-3 right-3 z-10">
         <ConnectKitButton />
-      </div>
+      </div> */}
       <Wrapper>
         <FadeIn>
           <div className="flex items-center flex-col mx-auto w-full mt-16 md:mt-32 justify-center px-2 md:px-8">
@@ -128,7 +128,7 @@ const Page: React.FC = () => {
                 <TabsTrigger value="links">Links</TabsTrigger>
                 <TabsTrigger value="nfts">NFTs</TabsTrigger>
                 <TabsTrigger value="guilds">Guilds</TabsTrigger>
-                <TabsTrigger value="donate">Donate</TabsTrigger>
+                {/* <TabsTrigger value="donate">Donate</TabsTrigger> */}
               </TabsList>
               <TabsContent value="links">
                 <div className="w-full mt-8 flex flex-col items-center justify-center">
@@ -175,7 +175,7 @@ const Page: React.FC = () => {
                   )}
                 </div>
               </TabsContent>
-              <TabsContent value="donate">
+              {/* <TabsContent value="donate">
                 <div className="w-full mt-8 flex items-center justify-center">
                   <DonateCrypto
                     ethereumAddress={
@@ -183,7 +183,7 @@ const Page: React.FC = () => {
                     }
                   />
                 </div>
-              </TabsContent>
+              </TabsContent> */}
             </Tabs>
           </div>
         </FadeIn>
