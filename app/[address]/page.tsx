@@ -13,6 +13,7 @@ import { useNFTCollectibles } from "@/lib/hooks/useNFTCollectibles";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import DonateCrypto from "@/components/DonateCrypto";
 import { ConnectKitButton } from "connectkit";
+import MainDrawer from "@/components/MoreOptionsDropdown";
 
 function LinkCard({
   href,
@@ -91,7 +92,7 @@ const Page: React.FC = () => {
 
   // Render the profile information
   const profile = data?.player[0]?.profile;
-  console.log("data", data);
+  console.log("data", profile);
   return (
     <main>
       <Image
@@ -99,9 +100,11 @@ const Page: React.FC = () => {
         src="/Banner.svg"
         height="380"
         width="2000"
-        className="absolute z-[-1] top-0 left-0 object-cover md:h-96 min-h-48 w-full"
+        style={{ zIndex: -2 }}
+        className="absolute top-0 left-0 object-cover md:h-96 min-h-48 w-full"
       />
-      <div className="fixed top-3 right-3 z-10">
+      <div className="fixed flex gap-x-4 items-center top-3 right-3 z-10">
+        <MainDrawer username={profile?.username} />
         <ConnectKitButton />
       </div>
       <Wrapper>
@@ -109,7 +112,7 @@ const Page: React.FC = () => {
           <div className="flex items-center flex-col mx-auto w-full mt-16 md:mt-32 justify-center px-2 md:px-8">
             <div className="h-40 w-40 md:h-72 md:w-72">
               <img
-                className="rounded-full h-40 w-40 md:h-72  md:w-72 border border-[12px] border-[rgba(255,255,255,0.04)]"
+                className="rounded-full h-40 w-40 md:h-72 md:w-72 border border-[12px] border-[rgba(255,255,255,0.04)]"
                 alt="Picture of the author"
                 src={toHTTP(profile.profileImageURL ?? "")}
                 width={288}
