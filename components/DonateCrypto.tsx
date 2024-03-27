@@ -16,7 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 
 const formSchema = z.object({
-  amount: z.number(),
+  amount: z.string(),
 });
 
 const DonateCrypto = ({
@@ -29,13 +29,14 @@ const DonateCrypto = ({
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      amount: 0,
+      amount: "0",
     },
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       const { amount } = values;
+      console.log(typeof amount);
 
       sendTransaction({
         to: ethereumAddress,
