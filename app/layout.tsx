@@ -48,7 +48,7 @@ export default function RootLayout({
 
       // Optional App Info
       appDescription: "A great app",
-      appUrl: "https://family.co", // your app's url
+      appUrl: "https://meta-links.vercel.app", // your app's url
       appIcon: "https://family.co/logo.png", // your app's icon, no bigger than 1024x1024px (max. 1MB)
     })
   );

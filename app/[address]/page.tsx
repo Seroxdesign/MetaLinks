@@ -94,7 +94,7 @@ const Page: React.FC = () => {
   const profile = data?.player[0]?.profile;
   console.log("data", profile);
   return (
-    <main>
+    <main className="relative top-0 left-0">
       <Image
         alt="background-image"
         src="/Banner.svg"
@@ -109,8 +109,8 @@ const Page: React.FC = () => {
       </div>
       <Wrapper>
         <FadeIn>
-          <div className="flex items-center flex-col mx-auto w-full mt-16 md:mt-32 justify-center px-2 md:px-8">
-            <div className="h-40 w-40 md:h-72 md:w-72">
+          <div className="flex items-center flex-col mx-auto w-full justify-center px-2 md:px-8">
+            <div className="h-40 w-40 mt-16 md:mt-32 md:h-72 md:w-72">
               <img
                 className="rounded-full h-40 w-40 md:h-72 md:w-72 border border-[12px] border-[rgba(255,255,255,0.04)]"
                 alt="Picture of the author"
