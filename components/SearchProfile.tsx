@@ -19,14 +19,14 @@ const SearchProfile = ({
   return (
     <div
       className={cn(
-        "z-50 flex justify-center items-center space-x-2",
+        "z-50 flex justify-center items-center gap-2 flex-col md:flex-row w-full",
         classname
       )}
     >
       <Input
         type="text"
-        placeholder="Enter username, name or ethereum address"
-        className="rounded-xl w-[30rem] h-[2.5rem]"
+        placeholder="Enter username, name or ETH address"
+        className="rounded-xl w-[85%] md:w-[30rem] h-[2.5rem]"
         value={searchQuery}
         onChange={(e) => {
           setSearchQuery(e.target.value);
@@ -38,6 +38,7 @@ const SearchProfile = ({
         }}
         variant="shimmer"
         size="shimmerLg"
+        className="text-sm h-8 md:h-10"
       >
         <IconSearch /> Search Profile
       </Button>
