@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import "./globals.css";
 import Script from "next/script";
 import { WagmiProvider, createConfig, http } from "wagmi";
-import { mainnet, polygon } from "wagmi/chains";
+import { mainnet, polygon, sepolia } from "wagmi/chains";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ConnectKitProvider, getDefaultConfig } from "connectkit";
 
@@ -28,7 +28,7 @@ export default function RootLayout({
     getDefaultConfig({
       ssr: true,
       // Your dApps chains
-      chains: [mainnet, polygon],
+      chains: [mainnet, polygon, sepolia],
       transports: {
         // RPC URL for each chain
         [mainnet.id]: http(
@@ -36,6 +36,9 @@ export default function RootLayout({
         ),
         [polygon.id]: http(
           `https://polygon-mainnet.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_ALCHEMY_POLYGON}`
+        ),
+        [sepolia.id]: http(
+          `https://eth-sepolia.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_ALCHEMY_SEPOLIA}`
         ),
       },
 
