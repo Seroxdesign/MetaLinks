@@ -21,7 +21,6 @@ export const useNFTCollectibles = (
       setError(null);
       try {
         const allData = await fetchAlchemyAllData(owner);
-        console.log('all data', allData)
         setData(allData);
       } catch (err) {
         console.error("error", error);
@@ -53,7 +52,7 @@ const fetchAlchemyAllData = async (owner: string): Promise<Array<any>> => {
 };
 
 const fetchAlchemyData = async (owner: string): Promise<Array<any>> => {
-  console.log('owner', owner)
+  console.log("owner", owner);
   const res = await fetch(`/api/alchemy?owner=${owner}`);
   const body = await res.text();
   const NFTs = JSON.parse(body);
