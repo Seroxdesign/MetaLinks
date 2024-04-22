@@ -92,7 +92,6 @@ const Page: React.FC = () => {
 
     const cid = await w3storage?.uploadFile(blob);
     const ipfsUrl = `ipfs://${cid}`;
-    console.log("ipfs url", ipfsUrl);
     // const ipfsUrl =
     //   "ipfs://bafkreid7pqjb7jljrsy7xahod5sabmak5ripcm3dziuyswk7qxsh3ddeym";
     const coordinationStrategyId =
