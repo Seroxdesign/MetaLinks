@@ -16,7 +16,7 @@ import { ConnectKitButton } from "connectkit";
 import MainDrawer from "@/components/MoreOptionsDropdown";
 import { useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { WERK_NFT_CONTRACT_ADDRESS_SEPOLIA } from "@/lib/constants";
-import { WerkNFT } from "@/lib/WerkNFT";
+import { WERKNFT_ABI } from "@/lib/WerkNFT";
 import { useW3upClient } from "@/lib/useW3upClient";
 
 function LinkCard({
@@ -71,7 +71,6 @@ const Page: React.FC = () => {
     error: writeContractErr,
     writeContractAsync,
   } = useWriteContract();
-  console.log("hash", hash, writeContractErr);
 
   const { isLoading: isConfirming, isSuccess: isConfirmed } =
     useWaitForTransactionReceipt({
@@ -91,25 +90,35 @@ const Page: React.FC = () => {
     const payloadString = JSON.stringify(payload);
     const blob = new Blob([payloadString], { type: "application/json" });
 
-    // const cid = await w3storage?.uploadFile(blob);
-    // console.log(cid);
-    // const ipfsUrl = `ipfs://${cid}`;
-    const ipfsUrl =
-      "ipfs://bafkreid7pqjb7jljrsy7xahod5sabmak5ripcm3dziuyswk7qxsh3ddeym";
+    const cid = await w3storage?.uploadFile(blob);
+    const ipfsUrl = `ipfs://${cid}`;
+    console.log("ipfs url", ipfsUrl);
+    // const ipfsUrl =
+    //   "ipfs://bafkreid7pqjb7jljrsy7xahod5sabmak5ripcm3dziuyswk7qxsh3ddeym";
+    const coordinationStrategyId =
+      "0x7e0bb5d32b56c645d0ec518278dbdd455ba9cb0aef4b5f5e1b948c3c8cc8bdf6";
+    const commitmentStrategyId =
+      "0x664b14947c4acefa12daff80395d2208043e7b616975fc8f20d23a0204cc2b25";
+    const evaluationStrategyId =
+      "0x90b92fef49f68b1f2508955e08ad8fcb052175afa2289b5883fc6660ce83c4f7";
+    const fundingStrategyId =
+      "0x554cdef72cf81a028dcca12b19667df6bee27e545aa7effb7639a14449b6652a";
+    const payoutStrategyId =
+      "0x28c0b3171d84a169a6516177f2a53929989d6278df8aacb2ad15c5ed6defa847";
 
     try {
       const res = await writeContractAsync({
         address: WERK_NFT_CONTRACT_ADDRESS_SEPOLIA,
-        abi: WerkNFT.abi,
+        abi: WERKNFT_ABI,
         functionName: "mintWorkstream",
         args: [
           address,
           ipfsUrl,
-          "0x7e0bb5d32b56c645d0ec518278dbdd455ba9cb0aef4b5f5e1b948c3c8cc8bdf6",
-          "0x664b14947c4acefa12daff80395d2208043e7b616975fc8f20d23a0204cc2b25",
-          "0x90b92fef49f68b1f2508955e08ad8fcb052175afa2289b5883fc6660ce83c4f7",
-          "0x554cdef72cf81a028dcca12b19667df6bee27e545aa7effb7639a14449b6652a",
-          "0x28c0b3171d84a169a6516177f2a53929989d6278df8aacb2ad15c5ed6defa847",
+          coordinationStrategyId,
+          commitmentStrategyId,
+          evaluationStrategyId,
+          fundingStrategyId,
+          payoutStrategyId,
         ],
       });
       console.log("res", res);
@@ -149,7 +158,7 @@ const Page: React.FC = () => {
 
   // Render the profile information
   const profile = data?.player[0]?.profile;
-  console.log("profile", profile);
+
   return (
     <main className="relative top-0 left-0">
       <Image
@@ -183,9 +192,10 @@ const Page: React.FC = () => {
             <p className="text-white text-center text-base my-8">
               {profile?.description ?? ""}
             </p>
-            <form onSubmit={(e) => submit(e, data?.player[0])}>
+            {/* Mint Button */}
+            {/* <form onSubmit={(e) => submit(e, data?.player[0])}>
               <button type="submit">Mint</button>
-            </form>
+            </form> */}
             <Tabs defaultValue="links" className="w-full">
               <TabsList className="flex items-center justify-center">
                 <TabsTrigger value="links">Links</TabsTrigger>
