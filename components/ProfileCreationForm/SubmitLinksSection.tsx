@@ -1,45 +1,41 @@
 "use client";
 
 import { Label } from "@radix-ui/react-label";
-import { useState } from "react";
 import { BottomGradient, GradiantSeparatorLine } from "./GradiantComponents";
 import LabelInputContainer from "./LabelInputContainer";
 import { Input } from "../ui/input";
 import { IconCirclePlus, IconGhost, IconTrash } from "@tabler/icons-react";
+import { cn } from "@/lib/utils";
 
-interface Link {
+export type TLink = {
   icon: string;
   name: string;
   url: string;
-}
+};
 
 const SubmitLinksSection = ({
   onClickPrevBtn,
+  linksData,
+  setLinksData,
 }: {
   onClickPrevBtn: () => void;
+  linksData: TLink[];
+  setLinksData: (linksData: TLink[]) => void;
 }) => {
-  const [linksData, setLinksData] = useState([
-    {
-      icon: "",
-      name: "",
-      url: "",
-    },
-  ]);
-
-  const handleChange = (index: number, field: keyof Link, value: string) => {
-    setLinksData((prevData) =>
-      prevData.map((link, i) =>
-        i === index ? { ...link, [field]: value } : link
-      )
+  const handleChange = (index: number, field: keyof TLink, value: string) => {
+    const updatedLinksData = linksData.map((linkData, i) =>
+      i === index ? { ...linkData, [field]: value } : linkData
     );
+    setLinksData(updatedLinksData);
   };
 
   const handleAddLink = () => {
-    setLinksData((prevData) => [...prevData, { icon: "", name: "", url: "" }]);
+    setLinksData([...linksData, { icon: "", name: "", url: "" }]);
   };
 
   const handleRemoveLink = (index: number) => {
-    setLinksData((prevData) => prevData.filter((_, i) => i !== index));
+    const updatedLinksData = linksData.filter((_, i) => i !== index);
+    setLinksData(updatedLinksData);
   };
 
   return (
@@ -110,7 +106,9 @@ const SubmitLinksSection = ({
       </div>
 
       <button
-        className="bg-gradient-to-br mt-10 flex items-center justify-center gap-1 relative group/btn from-black dark:from-zinc-900 dark:to-zinc-900 to-neutral-600  dark:bg-zinc-800 w-full text-white rounded-md h-10 font-medium shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:shadow-[0px_1px_0px_0px_var(--zinc-800)_inset,0px_-1px_0px_0px_var(--zinc-800)_inset]"
+        className={cn(
+          "bg-gradient-to-br mt-10 flex items-center justify-center gap-1 relative group/btn from-black dark:from-zinc-900 dark:to-zinc-900 to-neutral-600  dark:bg-zinc-800 w-full text-white rounded-md h-10 font-medium shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:shadow-[0px_1px_0px_0px_var(--zinc-800)_inset,0px_-1px_0px_0px_var(--zinc-800)_inset]"
+        )}
         type="submit"
       >
         <p>Create Profile</p> <IconGhost />

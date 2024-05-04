@@ -3,11 +3,25 @@
 import React, { useState } from "react";
 
 import SubmitLinksSection from "./SubmitLinksSection";
-import UserMetaDetailsSection from "./UserMetaDetailsSection";
+import UserMetaDetailsSection, {
+  TUserMetaDetails,
+} from "./UserMetaDetailsSection";
 
 const ProfileCreationForm = () => {
-  // const [username, setUsername] = useState("");
+  const [userMetaDetails, setUserMetaDetails] = useState<TUserMetaDetails>({
+    username: "",
+    bio: "",
+    profileImage: "",
+    backgroundImage: "",
+  });
   const [isSubmitLinksSection, setIsSubmitLinksSection] = useState(false);
+  const [linksData, setLinksData] = useState([
+    {
+      icon: "",
+      name: "",
+      url: "",
+    },
+  ]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -20,9 +34,13 @@ const ProfileCreationForm = () => {
         {!isSubmitLinksSection ? (
           <UserMetaDetailsSection
             onClickNextBtn={() => setIsSubmitLinksSection(true)}
+            userMetaDetails={userMetaDetails}
+            setUserMetaDetails={setUserMetaDetails}
           />
         ) : (
           <SubmitLinksSection
+            linksData={linksData}
+            setLinksData={setLinksData}
             onClickPrevBtn={() => setIsSubmitLinksSection(false)}
           />
         )}
