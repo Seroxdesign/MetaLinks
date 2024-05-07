@@ -15,7 +15,10 @@ import DonateCrypto from "@/components/DonateCrypto";
 import { ConnectKitButton } from "connectkit";
 import MainDrawer from "@/components/MoreOptionsDropdown";
 import { useWriteContract, useWaitForTransactionReceipt } from "wagmi";
-import { WERK_NFT_CONTRACT_ADDRESS_SEPOLIA } from "@/lib/constants";
+import {
+  WERK_NFT_CONTRACT_ADDRESS_SEPOLIA,
+  META_LINKS_URL,
+} from "@/lib/constants";
 import { WERKNFT_ABI } from "@/lib/WerkNFT";
 import { useW3upClient } from "@/lib/useW3upClient";
 
@@ -82,8 +85,10 @@ const Page: React.FC = () => {
 
     const payload = {
       links: player.links,
+      external_url: `${META_LINKS_URL}/${address}`,
       name: player.profile.name,
-      profileImageURL: player.profile.profileImageURL,
+      image: player.profile.profileImageURL,
+      description: player.profile.description,
       address: player.ethereumAddress,
     };
 
@@ -111,7 +116,8 @@ const Page: React.FC = () => {
         abi: WERKNFT_ABI,
         functionName: "mintWorkstream",
         args: [
-          address,
+          // address,
+          "0xd3Fb8F20ca2d2a1ecaf3EA04AD37c37f60Ee36dc",
           ipfsUrl,
           coordinationStrategyId,
           commitmentStrategyId,
