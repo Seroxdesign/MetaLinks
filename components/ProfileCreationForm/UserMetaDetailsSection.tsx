@@ -9,8 +9,8 @@ import LabelInputContainer from "./LabelInputContainer";
 export type TUserMetaDetails = {
   username: string;
   bio: string;
-  profileImage: string;
-  backgroundImage: string;
+  profileImage: any;
+  backgroundImage: any;
 };
 
 const UserMetaDetailsSection = ({
@@ -22,7 +22,7 @@ const UserMetaDetailsSection = ({
   userMetaDetails: TUserMetaDetails;
   setUserMetaDetails: (userMetaDetails: TUserMetaDetails) => void;
 }) => {
-  const handleChange = (field: keyof TUserMetaDetails, value: string) => {
+  const handleChange = (field: keyof TUserMetaDetails, value: any) => {
     setUserMetaDetails({
       ...userMetaDetails,
       [field]: value,
@@ -54,12 +54,16 @@ const UserMetaDetailsSection = ({
 
       <LabelInputContainer className="mb-4">
         <Label htmlFor="profile-image">Profile image</Label>
+
         <Input
           id="profile-image"
-          placeholder="a profile image"
-          type="text"
-          value={userMetaDetails.profileImage}
-          onChange={(e) => handleChange("profileImage", e.target.value)}
+          name="profile-image"
+          type="file"
+          className="block max-w-lg w-full shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm border border-gray-300 rounded-md"
+          onChange={(e) =>
+            handleChange("profileImage", e.target.files && e.target.files[0])
+          }
+          required
         />
       </LabelInputContainer>
 
@@ -67,10 +71,10 @@ const UserMetaDetailsSection = ({
         <Label htmlFor="background-image">Background image</Label>
         <Input
           id="background-image"
-          placeholder="a background image"
-          type="text"
-          value={userMetaDetails.backgroundImage}
-          onChange={(e) => handleChange("backgroundImage", e.target.value)}
+          type="file"
+          onChange={(e) =>
+            handleChange("backgroundImage", e.target.files && e.target.files[0])
+          }
         />
       </LabelInputContainer>
 
