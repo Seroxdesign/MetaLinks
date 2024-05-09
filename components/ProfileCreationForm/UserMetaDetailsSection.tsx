@@ -66,15 +66,15 @@ const UserMetaDetailsSection = ({
         <div className="mb-8 absolute top-[90%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 shadow-lg">
           <div className="inline-block relative">
             <Image
-              className="rounded-full w-36 h-36 border-white border-2"
+              className="rounded-full w-[120px] h-[120px] border-white border-2"
               src={
                 userMetaDetails.profileImage
                   ? URL.createObjectURL(userMetaDetails.profileImage)
                   : "/DefaultProfilePicture.png"
               }
               alt="Profile Picture"
-              width={144}
-              height={144}
+              width={120}
+              height={120}
             />
             <label className="absolute top-0 left-0 w-full h-full cursor-pointer">
               <Input
@@ -94,10 +94,12 @@ const UserMetaDetailsSection = ({
         </div>
       </div>
 
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4 pt-3">
         {/* Username */}
         <LabelInputContainer>
-          <Label htmlFor="username">UserName</Label>
+          <Label htmlFor="username" className="text-xs">
+            UserName
+          </Label>
           <Input
             id="username"
             placeholder="Tyler"
@@ -109,7 +111,9 @@ const UserMetaDetailsSection = ({
 
         {/* Bio */}
         <LabelInputContainer>
-          <Label htmlFor="bio">Bio</Label>
+          <Label htmlFor="bio" className="text-xs">
+            Bio
+          </Label>
           <textarea
             id="bio"
             placeholder="Durden"
