@@ -31,14 +31,19 @@ const UserMetaDetailsSection = ({
   return (
     <>
       <div className="mb-8 relative">
+        {/* Background Image */}
         <Image
-          className="rounded-lg shadow-xl dark:shadow-gray-800"
-          src={userMetaDetails.backgroundImage || "/DefaultBackgroundImage.png"}
+          className="rounded-lg !h-[200px] shadow-xl dark:shadow-gray-800"
+          src={
+            userMetaDetails.backgroundImage
+              ? URL.createObjectURL(userMetaDetails.backgroundImage)
+              : "/DefaultBackgroundImage.png"
+          }
           alt="default background image"
-          height="376"
+          height="200"
           width="576"
         />
-        <label className="absolute top-2 right-[-5px] w-10 h-10 border-white cursor-pointer">
+        <label className="absolute top-2 right-0 w-10 h-10 border-white cursor-pointer">
           <Image
             src="/Camera.png"
             alt="image description"
@@ -56,23 +61,41 @@ const UserMetaDetailsSection = ({
             }}
           />
         </label>
-      </div>
 
-      <div className="mb-4">
-        <Label htmlFor="profile-image">Profile image</Label>
-        <Input
-          id="profile-image"
-          name="profile-image"
-          type="file"
-          className="block max-w-lg w-full shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm border border-gray-300 rounded-md"
-          onChange={(e) =>
-            handleChange("profileImage", e.target.files && e.target.files[0])
-          }
-          required
-        />
+        {/* Profile Image */}
+        <div className="mb-8 absolute top-[90%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 shadow-lg">
+          <div className="inline-block relative">
+            <Image
+              className="rounded-full w-36 h-36 border-white border-2"
+              src={
+                userMetaDetails.profileImage
+                  ? URL.createObjectURL(userMetaDetails.profileImage)
+                  : "/DefaultProfilePicture.png"
+              }
+              alt="Profile Picture"
+              width={144}
+              height={144}
+            />
+            <label className="absolute top-0 left-0 w-full h-full cursor-pointer">
+              <Input
+                id="profile-image"
+                name="profile-image"
+                type="file"
+                className="hidden"
+                onChange={(e) =>
+                  handleChange(
+                    "profileImage",
+                    e.target.files && e.target.files[0]
+                  )
+                }
+              />
+            </label>
+          </div>
+        </div>
       </div>
 
       <div className="flex flex-col gap-4">
+        {/* Username */}
         <LabelInputContainer>
           <Label htmlFor="username">UserName</Label>
           <Input
@@ -84,20 +107,22 @@ const UserMetaDetailsSection = ({
           />
         </LabelInputContainer>
 
+        {/* Bio */}
         <LabelInputContainer>
           <Label htmlFor="bio">Bio</Label>
-          <Input
+          <textarea
             id="bio"
             placeholder="Durden"
-            type="text"
             value={userMetaDetails.bio}
             onChange={(e) => handleChange("bio", e.target.value)}
+            className="py-4 px-4 rounded-md border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
           />
         </LabelInputContainer>
       </div>
 
+      {/* Next Button */}
       <button
-        className="bg-gradient-to-br right-0 absolute px-4 group/btn from-black dark:from-zinc-900 dark:to-zinc-900 to-neutral-600 dark:bg-zinc-800 w-fit text-white rounded-md h-10 font-medium shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:shadow-[0px_1px_0px_0px_var(--zinc-800)_inset,0px_-1px_0px_0px_var(--zinc-800)_inset]"
+        className="bg-gradient-to-br right-0 absolute px-4 group/btn from-black dark:from-zinc-900 dark:to-zinc-900 to-neutral-600 dark:bg-zinc-800 w-fit text-white rounded-md h-8 font-medium text-xs mt-8 cursor-pointer"
         onClick={onClickNextBtn}
       >
         Next &rarr;
