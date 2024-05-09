@@ -1,6 +1,16 @@
 "use client";
 
+
+   // TODO:
+    // 1) Only upload image to IPFS
+    // 2) Call to supabase (add trpc?)
+    // 3) Use react hook form
+    // Fix color schemes
+    // Add connect to wallet while creating profile and get address
+    // 
+
 import React, { useState } from "react";
+
 
 import SubmitLinksSection, { TLink } from "./SubmitLinksSection";
 import UserMetaDetailsSection, {
@@ -30,6 +40,7 @@ const ProfileCreationForm = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+ 
     const body = {
       userName: userMetaDetails.username,
       bio: userMetaDetails.bio,
@@ -42,7 +53,8 @@ const ProfileCreationForm = () => {
       })),
     };
     const cid = await uploadFileToWeb3Storage<typeof body>({ payload: body });
-    console.log("cid:", cid);
+    const ipfsUrl = `ipfs://${cid}`;
+    console.log("ipfsUrl:", ipfsUrl);
   };
 
   return (
