@@ -1,16 +1,14 @@
 "use client";
 
-
-   // TODO:
-    // 1) Only upload image to IPFS
-    // 2) Call to supabase (add trpc?)
-    // 3) Use react hook form
-    // Fix color schemes
-    // Add connect to wallet while creating profile and get address
-    // 
+// TODO:
+// 1) Only upload image to IPFS (DONE)
+// 2) Call to supabase (add trpc?)
+// 3) Use react hook form
+// Fix color schemes
+// Add connect to wallet while creating profile and get address (DONE)
+//
 
 import React, { useState } from "react";
-
 
 import SubmitLinksSection, { TLink } from "./SubmitLinksSection";
 import UserMetaDetailsSection, {
@@ -20,9 +18,13 @@ import { IconGhost } from "@tabler/icons-react";
 import { BottomGradient } from "./GradiantComponents";
 import { cn } from "@/lib/utils";
 import { useWeb3StorageUtilities } from "@/lib/hooks/useWeb3StorageUtilities";
+import { useConnectWallet } from "@/lib/hooks/useConnectWallet";
 
 const ProfileCreationForm = () => {
   const { uploadFileToWeb3Storage } = useWeb3StorageUtilities();
+  const { isConnected, handleConnectWallet, isSignedIn, handleSignIn } =
+    useConnectWallet();
+
   const [userMetaDetails, setUserMetaDetails] = useState<TUserMetaDetails>({
     username: "",
     bio: "",
@@ -40,19 +42,25 @@ const ProfileCreationForm = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
- 
-    const body = {
-      userName: userMetaDetails.username,
-      bio: userMetaDetails.bio,
+
+    if (!isConnected) {
+      handleConnectWallet();
+    }
+    if (!isSignedIn) {
+      await handleSignIn();
+    }
+
+    // Upload image to IPFS
+    const formImages = {
       profileImage: userMetaDetails.profileImage,
       backgroundImage: userMetaDetails.backgroundImage,
       links: linksData.map((link) => ({
         icon: link.icon,
-        name: link.name,
-        url: link.url,
       })),
     };
-    const cid = await uploadFileToWeb3Storage<typeof body>({ payload: body });
+    const cid = await uploadFileToWeb3Storage<typeof formImages>({
+      payload: formImages,
+    });
     const ipfsUrl = `ipfs://${cid}`;
     console.log("ipfsUrl:", ipfsUrl);
   };
