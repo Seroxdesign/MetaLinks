@@ -1,9 +1,16 @@
 import React from "react";
 import Image from "next/image";
 import { Input } from "../ui/input";
-import { Label } from "../ui/label";
+
 import LabelInputContainer from "./LabelInputContainer";
 import { GradiantSeparatorLine } from "./GradiantComponents";
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 
 export type TUserMetaDetails = {
   username: string;
@@ -14,114 +21,139 @@ export type TUserMetaDetails = {
 
 const UserMetaDetailsSection = ({
   onClickNextBtn,
-  userMetaDetails,
-  setUserMetaDetails,
+  form,
 }: {
   onClickNextBtn: () => void;
-  userMetaDetails: TUserMetaDetails;
-  setUserMetaDetails: (userMetaDetails: TUserMetaDetails) => void;
+  form: any;
 }) => {
-  const handleChange = (field: keyof TUserMetaDetails, value: any) => {
-    setUserMetaDetails({
-      ...userMetaDetails,
-      [field]: value,
-    });
-  };
-
   return (
     <>
       <div className="mb-8 relative">
         {/* Background Image */}
-        <Image
-          className="rounded-lg !h-[200px] shadow-xl dark:shadow-gray-800"
-          src={
-            userMetaDetails.backgroundImage
-              ? URL.createObjectURL(userMetaDetails.backgroundImage)
-              : "/DefaultBackgroundImage.png"
-          }
-          alt="default background image"
-          height="200"
-          width="576"
+        <FormField
+          control={form.control}
+          name="backgroundImage"
+          render={({ field }) => (
+            <FormItem>
+              <Image
+                className="rounded-lg !h-[200px] shadow-xl dark:shadow-gray-800"
+                src={
+                  field.value
+                    ? URL.createObjectURL(field.value)
+                    : "/DefaultBackgroundImage.png"
+                }
+                alt="default background image"
+                height="200"
+                width="576"
+              />
+              <FormLabel className="absolute top-2 right-0 w-10 h-10 border-white cursor-pointer">
+                <Image
+                  src="/Camera.png"
+                  alt="image description"
+                  height="25"
+                  width="25"
+                />
+                <FormControl>
+                  <Input
+                    type="file"
+                    className="hidden"
+                    {...field}
+                    value={undefined}
+                    onChange={(e) => {
+                      field.onChange(e.target.files && e.target.files[0]);
+                    }}
+                  />
+                </FormControl>
+              </FormLabel>
+
+              <FormMessage />
+            </FormItem>
+          )}
         />
-        <label className="absolute top-2 right-0 w-10 h-10 border-white cursor-pointer">
-          <Image
-            src="/Camera.png"
-            alt="image description"
-            height="25"
-            width="25"
-          />
-          <Input
-            type="file"
-            className="hidden"
-            onChange={(e) => {
-              handleChange(
-                "backgroundImage",
-                e.target.files && e.target.files[0]
-              );
-            }}
-          />
-        </label>
 
         {/* Profile Image */}
-        <div className="mb-8 absolute top-[90%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 shadow-lg">
-          <div className="inline-block relative">
-            <Image
-              className="rounded-full w-[120px] h-[120px] border-white border-2"
-              src={
-                userMetaDetails.profileImage
-                  ? URL.createObjectURL(userMetaDetails.profileImage)
-                  : "/DefaultProfilePicture.png"
-              }
-              alt="Profile Picture"
-              width={120}
-              height={120}
-            />
-            <label className="absolute top-0 left-0 w-full h-full cursor-pointer">
-              <Input
-                id="profile-image"
-                name="profile-image"
-                type="file"
-                className="hidden"
-                onChange={(e) =>
-                  handleChange(
-                    "profileImage",
-                    e.target.files && e.target.files[0]
-                  )
-                }
-              />
-            </label>
-          </div>
-        </div>
+        <FormField
+          control={form.control}
+          name="profileImage"
+          render={({ field }) => (
+            <FormItem className="mb-8 absolute top-[90%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 shadow-lg">
+              <div className="inline-block relative">
+                <Image
+                  className="rounded-full w-[120px] h-[120px] border-white border-2"
+                  src={
+                    field.value
+                      ? URL.createObjectURL(field.value)
+                      : "/DefaultProfilePicture.png"
+                  }
+                  alt="Profile Picture"
+                  width={120}
+                  height={120}
+                />
+                <FormLabel className="absolute top-0 left-0 w-full h-full cursor-pointer">
+                  <FormControl>
+                    <Input
+                      type="file"
+                      className="hidden"
+                      {...field}
+                      value={undefined}
+                      onChange={(e) => {
+                        field.onChange(e.target.files && e.target.files[0]);
+                      }}
+                    />
+                  </FormControl>
+                </FormLabel>
+              </div>
+            </FormItem>
+          )}
+        />
       </div>
 
       <div className="flex flex-col gap-4 pt-3">
-        {/* Username */}
-        <LabelInputContainer>
-          <Label htmlFor="username" className="text-xs">
-            UserName
-          </Label>
-          <Input
-            id="username"
-            placeholder="Tyler"
-            type="text"
-            value={userMetaDetails.username}
-            onChange={(e) => handleChange("username", e.target.value)}
-          />
-        </LabelInputContainer>
+        <FormField
+          control={form.control}
+          name="username"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel htmlFor="username" className="font-bold text-xs">
+                UserName
+              </FormLabel>
+              <FormControl>
+                {/* <Input type="text" placeholder="Tyler" {...field} /> */}
+                <Input
+                  id="username"
+                  placeholder="Tyler"
+                  type="text"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         {/* Bio */}
-        <LabelInputContainer>
-          <Label htmlFor="bio" className="text-xs">
-            Bio
-          </Label>
-          <textarea
-            id="bio"
-            placeholder="Durden"
-            value={userMetaDetails.bio}
-            onChange={(e) => handleChange("bio", e.target.value)}
-            className="py-4 px-4 rounded-md border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-          />
-        </LabelInputContainer>
+        <FormField
+          control={form.control}
+          name="bio"
+          render={({ field }) => (
+            <FormItem>
+              <LabelInputContainer>
+                <FormLabel htmlFor="bio" className="font-bold text-xs">
+                  Bio
+                </FormLabel>
+                <FormControl>
+                  <textarea
+                    id="bio"
+                    placeholder="Durden"
+                    {...field}
+                    className="py-4 px-4 rounded-md border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  />
+                </FormControl>
+              </LabelInputContainer>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
       </div>
 
       {/* Next Button */}
