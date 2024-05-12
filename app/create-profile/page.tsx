@@ -6,10 +6,8 @@ import { Suspense } from "react";
 
 const ProfileCreationComponent = () => {
   return (
-    <main>
-      <div className="mt-16">
+    <main className="mt-16">
         <ProfileCreationForm />
-      </div>
     </main>
   );
 };

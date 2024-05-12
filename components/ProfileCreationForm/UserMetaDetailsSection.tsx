@@ -11,6 +11,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { useFormContext } from "react-hook-form";
 
 export type TUserMetaDetails = {
   username: string;
@@ -21,11 +22,10 @@ export type TUserMetaDetails = {
 
 const UserMetaDetailsSection = ({
   onClickNextBtn,
-  form,
 }: {
   onClickNextBtn: () => void;
-  form: any;
 }) => {
+  const form = useFormContext();
   return (
     <>
       <div className="mb-8 relative">
@@ -102,6 +102,7 @@ const UserMetaDetailsSection = ({
                     />
                   </FormControl>
                 </FormLabel>
+                <FormMessage />
               </div>
             </FormItem>
           )}
@@ -115,10 +116,9 @@ const UserMetaDetailsSection = ({
           render={({ field }) => (
             <FormItem>
               <FormLabel htmlFor="username" className="font-bold text-xs">
-                UserName
+                Username
               </FormLabel>
               <FormControl>
-                {/* <Input type="text" placeholder="Tyler" {...field} /> */}
                 <Input
                   id="username"
                   placeholder="Tyler"
@@ -146,7 +146,7 @@ const UserMetaDetailsSection = ({
                     id="bio"
                     placeholder="Durden"
                     {...field}
-                    className="py-4 px-4 rounded-md border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    className="py-4 px-4 rounded-md border focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring border-input sm:text-sm bg-transparent"
                   />
                 </FormControl>
               </LabelInputContainer>

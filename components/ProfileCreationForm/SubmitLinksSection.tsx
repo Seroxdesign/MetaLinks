@@ -1,4 +1,5 @@
 "use client";
+// TODO: maybe use useFieldArray for links
 
 import { Label } from "@radix-ui/react-label";
 import { GradiantSeparatorLine } from "./GradiantComponents";
@@ -13,6 +14,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { useFormContext } from "react-hook-form";
 
 export type TLink = {
   icon: any;
@@ -22,11 +24,11 @@ export type TLink = {
 
 const SubmitLinksSection = ({
   onClickPrevBtn,
-  form,
 }: {
   onClickPrevBtn: () => void;
-  form: any;
 }) => {
+  const form = useFormContext();
+
   return (
     <>
       <div className="flex flex-col space-y-4 w-full">

@@ -1,12 +1,8 @@
 "use client";
 
 // TODO:
-// 1) Only upload image to IPFS (DONE)
-// 2) Call to supabase (add trpc?)
-// 3) Use react hook form (DONE)
-// Fix color schemes
-// Add connect to wallet while creating profile and get address (DONE)
-//
+// While uploading profile picture, optimize the profile picture and add limit.
+// FIX: Connect to wallet flow before creating profile picture
 
 import React, { useState } from "react";
 
@@ -23,13 +19,15 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 const formSchema = z.object({
-  username: z.string(),
-  bio: z.string(),
-  profileImage: z.any(),
-  backgroundImage: z.any(),
+  username: z.string().min(4, "username should be atlease 4 characters"),
+  bio: z.string().optional().default(""),
+  profileImage: z.custom<File>((v) => v instanceof File, {
+    message: "Profile Image is required",
+  }),
+  backgroundImage: z.custom<File>((v) => v instanceof File).optional().nullable(),
   links: z.array(
     z.object({
-      icon: z.any(),
+      icon: z.any().optional(),
       name: z.string(),
       url: z.string(),
     })
@@ -40,15 +38,18 @@ const ProfileCreationForm = () => {
   const { uploadFileToWeb3Storage } = useWeb3StorageUtilities();
   const { isConnected, handleConnectWallet, isSignedIn, handleSignIn } =
     useConnectWallet();
+  const [errorMsg, setErrorMsg]=useState<string | undefined>()
 
-  const [isSubmitLinksSection, setIsSubmitLinksSection] = useState(false);
+  const [step, setStep] = useState<"userDetails" | "submitLinks">(
+    "userDetails"
+  );
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       username: "",
       bio: "",
-      profileImage: null,
+      profileImage: undefined,
       backgroundImage: null,
       links: [
         {
@@ -60,13 +61,12 @@ const ProfileCreationForm = () => {
     },
   });
 
+  const t = form.getValues();
+
   const handleFormSubmit = async () => {
     try {
       if (!isConnected) {
-        handleConnectWallet();
-      }
-      if (!isSignedIn) {
-        await handleSignIn();
+        setErrorMsg("You must be connected to wallet")
       }
 
       const { backgroundImage, profileImage, links } = form.getValues();
@@ -84,6 +84,7 @@ const ProfileCreationForm = () => {
       });
       const ipfsUrl = `ipfs://${cid}`;
       console.log("ipfsUrl:", ipfsUrl);
+      // TODO: Create a DB entry in supabase (create tRPC endpoint)
     } catch (error) {
       console.log("error", error);
     }
@@ -96,16 +97,14 @@ const ProfileCreationForm = () => {
           className="my-8 relative"
           onSubmit={form.handleSubmit(handleFormSubmit)}
         >
-          {!isSubmitLinksSection ? (
+          {step === "userDetails" ? (
             <UserMetaDetailsSection
-              onClickNextBtn={() => setIsSubmitLinksSection(true)}
-              form={form}
+              onClickNextBtn={() => setStep("submitLinks")}
             />
           ) : (
             <>
               <SubmitLinksSection
-                onClickPrevBtn={() => setIsSubmitLinksSection(false)}
-                form={form}
+                onClickPrevBtn={() => setStep("userDetails")}
               />
               <button
                 className={cn(
@@ -118,6 +117,7 @@ const ProfileCreationForm = () => {
               </button>
             </>
           )}
+          {!!errorMsg && <p className="text-md text-red-500 text-center" >{errorMsg}</p>}
         </form>
       </Form>
     </div>
