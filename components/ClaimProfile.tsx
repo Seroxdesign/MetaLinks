@@ -1,4 +1,3 @@
-
 import { useRouter } from "next/navigation";
 import { HoverBorderGradient } from "@/components/hover-border-gradient";
 
@@ -11,13 +10,13 @@ const ClaimYourProfileButton = () => {
         as="button"
         className="dark:bg-black bg-white text-black dark:text-white flex items-center space-x-2"
         onClick={() => {
-          router.push("https://enter.metagame.wtf/");
+          router.push("/create-profile");
         }}
       >
         <span>Claim your profile</span>
       </HoverBorderGradient>
     </div>
   );
-}
+};
 
 export default ClaimYourProfileButton;
