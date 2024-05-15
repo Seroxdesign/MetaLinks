@@ -77,6 +77,7 @@ const SubmitLinksSection = ({
                               ),
                             ]);
                           }}
+                          accept={["jpeg", "jpg", "png"].join(", ")}
                         />
                       </FormControl>
                     </FormItem>

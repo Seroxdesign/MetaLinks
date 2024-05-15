@@ -2,7 +2,7 @@ import { useSIWE, useModal, SIWESession } from "connectkit";
 import { useAccount } from "wagmi";
 
 export const useConnectWallet = () => {
-  const { setOpen } = useModal();
+  const { openSIWE, openSwitchNetworks } = useModal();
   const { isConnected } = useAccount();
 
   const { data, isReady, isRejected, isLoading, isSignedIn, signOut, signIn } =
@@ -29,14 +29,15 @@ export const useConnectWallet = () => {
 
   return {
     isSignedIn,
-    isConnected,
+    isConnected: isConnected,
     handleSignIn,
     handleSignOut,
     isReady,
     isRejected,
     isLoading,
     handleConnectWallet: function () {
-      setOpen(true);
+      openSIWE();
+      openSwitchNetworks();
     },
     data,
   };
