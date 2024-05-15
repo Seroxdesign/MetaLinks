@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@apollo/client": "^3.9.2",
+    "@ethereum-attestation-service/eas-sdk": "^1.5.0",
     "@ethersproject/address": "^5.7.0",
     "@hookform/resolvers": "^3.3.4",
     "@radix-ui/react-avatar": "^1.0.4",
@@ -31,6 +32,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "connectkit": "^1.7.2",
+    "ethers": "^6.12.1",
     "framer-motion": "^11.0.3",
     "graphql": "^16.8.1",
     "next": "14.1.4",

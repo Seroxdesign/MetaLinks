@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 
 import { useQuery } from "@apollo/client";
 import { profileQuery } from "@/services/apollo";
@@ -21,6 +21,7 @@ import {
 } from "@/lib/constants";
 import { WERKNFT_ABI } from "@/lib/WerkNFT";
 import { useW3upClient } from "@/lib/useW3upClient";
+import { useEAS } from "@/lib/hooks/useEAS";
 
 function LinkCard({
   href,
@@ -57,6 +58,54 @@ function LinkCard({
     </a>
   );
 }
+
+const Attestations = ({ address }: { address: string }) => {
+  const { attest, getAttestationsForRecipient, isLoading } = useEAS();
+  const [attestation, setAttestion] = useState<string>("");
+  const [attestations, setAttestations] = useState<any[]>([]);
+  const [isAttesting, setIsAttesting] = useState(false);
+
+  useEffect(() => {
+    const getAttestationData = async () => {
+      const attestationData = await getAttestationsForRecipient(address);
+      setAttestations(attestationData);
+    };
+    getAttestationData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [address, isAttesting]);
+
+  const handleAttest = async () => {
+    try {
+      setIsAttesting(true);
+      await attest(attestation, address);
+      setAttestion("");
+    } catch (err) {
+    } finally {
+      setIsAttesting(false);
+    }
+  };
+
+  return isLoading ? (
+    <p>Loading...</p>
+  ) : (
+    <div>
+      <h3>Your Attestations: ({attestations?.length})</h3>
+      {attestations?.map((att, i) => {
+        const attestor = att[3].value;
+        const timeCreated = att[1].value.value;
+
+        const attestationVal = att[0].value;
+        return (
+          <div key={i}>
+            <p>{attestationVal.value}</p>
+            <p>By {attestor}</p>
+            <p>{timeCreated}</p>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
 
 const Page: React.FC = () => {
   // Get the address from the router params
@@ -207,6 +256,7 @@ const Page: React.FC = () => {
                 <TabsTrigger value="nfts">NFTs</TabsTrigger>
                 <TabsTrigger value="guilds">Guilds</TabsTrigger>
                 <TabsTrigger value="donate">Donate</TabsTrigger>
+                <TabsTrigger value="attestation">Attestation</TabsTrigger>
               </TabsList>
               <TabsContent value="links">
                 <div className="w-full mt-8 flex flex-col items-center justify-center">
@@ -261,6 +311,9 @@ const Page: React.FC = () => {
                     }
                   />
                 </div>
+              </TabsContent>
+              <TabsContent value="attestation">
+                <Attestations address={address} />
               </TabsContent>
             </Tabs>
           </div>
