@@ -17,6 +17,7 @@ import { Form } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useAccount } from "wagmi";
 
 const formSchema = z.object({
   username: z.string().min(4, "username should be atlease 4 characters"),
@@ -24,7 +25,10 @@ const formSchema = z.object({
   profileImage: z.custom<File>((v) => v instanceof File, {
     message: "Profile Image is required",
   }),
-  backgroundImage: z.custom<File>((v) => v instanceof File).optional().nullable(),
+  backgroundImage: z
+    .custom<File>((v) => v instanceof File)
+    .optional()
+    .nullable(),
   links: z.array(
     z.object({
       icon: z.any().optional(),
@@ -35,10 +39,11 @@ const formSchema = z.object({
 });
 
 const ProfileCreationForm = () => {
-  const { uploadFileToWeb3Storage } = useWeb3StorageUtilities();
-  const { isConnected, handleConnectWallet, isSignedIn, handleSignIn } =
-    useConnectWallet();
-  const [errorMsg, setErrorMsg]=useState<string | undefined>()
+  const { uploadFileToWeb3Storage, isUploading } = useWeb3StorageUtilities();
+  const { isConnected, handleConnectWallet } = useConnectWallet();
+  const { address, chainId } = useAccount();
+
+  const [errorMsg, setErrorMsg] = useState<string | undefined>();
 
   const [step, setStep] = useState<"userDetails" | "submitLinks">(
     "userDetails"
@@ -65,11 +70,11 @@ const ProfileCreationForm = () => {
 
   const handleFormSubmit = async () => {
     try {
-      if (!isConnected) {
-        setErrorMsg("You must be connected to wallet")
+      if (!isConnected && !address && !chainId) {
+        handleConnectWallet();
       }
 
-      const { backgroundImage, profileImage, links } = form.getValues();
+      const { backgroundImage, profileImage, links } = t;
 
       // Upload image to IPFS
       const formImages = {
@@ -90,6 +95,14 @@ const ProfileCreationForm = () => {
     }
   };
 
+  // Function to handle Next button click
+  const handleNextButtonClick = () => {
+    if (!t.profileImage || !t.username) {
+      return;
+    }
+    setStep("submitLinks");
+  };
+
   return (
     <div className="max-w-md w-full mx-auto rounded-none md:rounded-2xl p-4 md:p-8">
       <Form {...form}>
@@ -98,9 +111,7 @@ const ProfileCreationForm = () => {
           onSubmit={form.handleSubmit(handleFormSubmit)}
         >
           {step === "userDetails" ? (
-            <UserMetaDetailsSection
-              onClickNextBtn={() => setStep("submitLinks")}
-            />
+            <UserMetaDetailsSection onClickNextBtn={handleNextButtonClick} />
           ) : (
             <>
               <SubmitLinksSection
@@ -112,12 +123,20 @@ const ProfileCreationForm = () => {
                 )}
                 type="submit"
               >
-                <p>Create Profile</p> <IconGhost />
+                {isUploading ? (
+                  <i>Uploading...</i>
+                ) : (
+                  <>
+                    <p>Create Profile</p> <IconGhost />
+                  </>
+                )}
                 <BottomGradient />
               </button>
             </>
           )}
-          {!!errorMsg && <p className="text-md text-red-500 text-center" >{errorMsg}</p>}
+          {!!errorMsg && (
+            <p className="text-md text-red-500 text-center">{errorMsg}</p>
+          )}
         </form>
       </Form>
     </div>
