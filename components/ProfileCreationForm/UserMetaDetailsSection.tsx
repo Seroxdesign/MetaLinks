@@ -77,7 +77,7 @@ const UserMetaDetailsSection = ({
           name="profileImage"
           render={({ field }) => (
             <FormItem className="mb-8 absolute top-[90%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 shadow-lg">
-              <div className="inline-block relative">
+              <div className="relative flex flex-col items-center">
                 <Image
                   className="rounded-full w-[120px] h-[120px] border-white border-2"
                   src={
@@ -102,7 +102,7 @@ const UserMetaDetailsSection = ({
                     />
                   </FormControl>
                 </FormLabel>
-                <FormMessage />
+                <FormMessage className="mt-1" />
               </div>
             </FormItem>
           )}
