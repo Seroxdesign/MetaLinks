@@ -81,11 +81,14 @@ const ProfileCreationForm = () => {
           icon: link.icon,
         })),
       };
-      const cid = await uploadFileToWeb3Storage<typeof formImages>({
-        payload: formImages,
-      });
-      const ipfsUrl = `ipfs://${cid}`;
-      console.log("ipfsUrl:", ipfsUrl);
+      console.log("formImages",formImages)
+
+      //TODO: FIX This later
+      // const cid = await uploadFileToWeb3Storage<typeof formImages>({
+      //   payload: formImages,
+      // });
+      // const ipfsUrl = `ipfs://${cid}`;
+      // console.log("ipfsUrl:", ipfsUrl);
       // TODO: Create a DB entry in supabase (create tRPC endpoint)
     } catch (error) {
       console.log("error", error);
