@@ -12,6 +12,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useFormContext } from "react-hook-form";
+import { useMediaUploadErrorHandler } from "@/lib/hooks/useMediaErrorHandler";
 
 export type TUserMetaDetails = {
   username: string;
@@ -26,6 +27,7 @@ const UserMetaDetailsSection = ({
   onClickNextBtn: () => void;
 }) => {
   const form = useFormContext();
+  const { mediaUploadErrorHandler } = useMediaUploadErrorHandler();
   return (
     <>
       <div className="mb-8 relative">
@@ -60,8 +62,14 @@ const UserMetaDetailsSection = ({
                     {...field}
                     value={undefined}
                     onChange={(e) => {
+                      const isValid = mediaUploadErrorHandler({
+                        file: e.target.files && e.target.files[0],
+                        name: "backgroundImage",
+                      });
+                      if (!isValid) return;
                       field.onChange(e.target.files && e.target.files[0]);
                     }}
+                    accept={["jpeg", "jpg", "png"].join(", ")}
                   />
                 </FormControl>
               </FormLabel>
@@ -97,8 +105,14 @@ const UserMetaDetailsSection = ({
                       {...field}
                       value={undefined}
                       onChange={(e) => {
+                        const isValid = mediaUploadErrorHandler({
+                          file: e.target.files && e.target.files[0],
+                          name: "profileImage",
+                        });
+                        if (!isValid) return;
                         field.onChange(e.target.files && e.target.files[0]);
                       }}
+                      accept={["jpeg", "jpg", "png"].join(", ")}
                     />
                   </FormControl>
                 </FormLabel>
