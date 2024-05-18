@@ -1,9 +1,5 @@
 "use client";
 
-// TODO:
-// While uploading profile picture, optimize the profile picture and add limit.
-// FIX: Connect to wallet flow before creating profile picture
-
 import React, { useState } from "react";
 
 import SubmitLinksSection from "./SubmitLinksSection";
@@ -66,15 +62,16 @@ const ProfileCreationForm = () => {
     },
   });
 
-  const t = form.getValues();
+  const formValues = form.getValues();
 
-  const handleFormSubmit = async () => {
+  const handleFormSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      if (!isConnected && !address && !chainId) {
+      if (!isConnected && !address) {
         handleConnectWallet();
+        return;
       }
 
-      const { backgroundImage, profileImage, links } = t;
+      const { backgroundImage, profileImage, links } = values;
 
       // Upload image to IPFS
       const formImages = {
@@ -84,11 +81,14 @@ const ProfileCreationForm = () => {
           icon: link.icon,
         })),
       };
-      const cid = await uploadFileToWeb3Storage<typeof formImages>({
-        payload: formImages,
-      });
-      const ipfsUrl = `ipfs://${cid}`;
-      console.log("ipfsUrl:", ipfsUrl);
+      console.log("formImages",formImages)
+
+      //TODO: FIX This later
+      // const cid = await uploadFileToWeb3Storage<typeof formImages>({
+      //   payload: formImages,
+      // });
+      // const ipfsUrl = `ipfs://${cid}`;
+      // console.log("ipfsUrl:", ipfsUrl);
       // TODO: Create a DB entry in supabase (create tRPC endpoint)
     } catch (error) {
       console.log("error", error);
@@ -97,7 +97,7 @@ const ProfileCreationForm = () => {
 
   // Function to handle Next button click
   const handleNextButtonClick = () => {
-    if (!t.profileImage || !t.username) {
+    if (!formValues.profileImage || !formValues.username) {
       return;
     }
     setStep("submitLinks");
@@ -122,12 +122,17 @@ const ProfileCreationForm = () => {
                   "bg-gradient-to-br mt-10 flex items-center justify-center gap-1 relative group/btn from-black dark:from-zinc-900 dark:to-zinc-900 to-neutral-600  dark:bg-zinc-800 w-full text-white rounded-md h-10 font-medium shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:shadow-[0px_1px_0px_0px_var(--zinc-800)_inset,0px_-1px_0px_0px_var(--zinc-800)_inset]"
                 )}
                 type="submit"
+                disabled={isUploading}
               >
                 {isUploading ? (
                   <i>Uploading...</i>
                 ) : (
                   <>
-                    <p>Create Profile</p> <IconGhost />
+                    {isConnected ? (
+                      <p>Create Profile</p>
+                    ) : (
+                      <p>Connect Wallet</p>
+                    )}
                   </>
                 )}
                 <BottomGradient />

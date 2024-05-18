@@ -6,6 +6,7 @@ export const useMediaUploadErrorHandler = () => {
   const ALLOWED_IMAGE_EXTENSIONS = ["jpeg", "jpg", "png"];
   const MAX_IMAGE_SIZE_IN_BYTES = 5 * 1024 * 1024; // 5 MB
   const MIN_IMAGE_SIZE_IN_BYTES = 350 * 1024; // 350 KB
+  const MIN_IMAGE_SIZE_IN_BYTES = 30 * 1024; // 30 KB
 
   const isAllowedImageExtension = (extensionToCheck: string) =>
     ALLOWED_IMAGE_EXTENSIONS.includes(extensionToCheck.toLowerCase());
