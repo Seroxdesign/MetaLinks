@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { useAccount, useWalletClient } from "wagmi";
 import { getAddress } from "viem";
 import { useEthersSigner } from "../eas-wagmi-utils";
+import { ZAttestations } from "@/lib/zod-utils";
+
 
 // EAS Schema https://optimism.easscan.org/schema/view/0xd4c0003240401da8b17fbe710a41e4c8e690a0afef796ab6d5871b69ac15b0d1
 
@@ -112,7 +114,10 @@ export const useEAS = () => {
             },
           ])
       );
-      return decodedData;
+
+      const parsedData= ZAttestations.parse(decodedData)
+
+      return parsedData;
     } catch (err) {
       // Handle any errors
       console.error("Error fetching data:", err);
