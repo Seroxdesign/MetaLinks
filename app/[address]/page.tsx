@@ -128,7 +128,7 @@ const Attestations = ({ address }: { address: string }) => {
       const { attestation } = data;
       setIsAttesting(true);
       await attest(attestation, address);
-      setAttestion("");
+      form.reset();
     } catch (err) {
     } finally {
       setIsAttesting(false);
