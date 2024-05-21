@@ -1,5 +1,5 @@
 export const airStackQuery = `
-  query MyQuery {
+  query MyQuery() {
     Wallet(input: { identity: "vitalik.eth", blockchain: ethereum }) {
       socials {
         dappName
