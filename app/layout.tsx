@@ -11,6 +11,7 @@ import { WagmiProvider, createConfig, http } from "wagmi";
 import { mainnet, polygon, sepolia } from "wagmi/chains";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ConnectKitProvider, getDefaultConfig } from "connectkit";
+import { AirstackProvider } from "@airstack/airstack-react";
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -84,10 +85,16 @@ export default function RootLayout({
         <WagmiProvider config={config}>
           <QueryClientProvider client={queryClient}>
             <ConnectKitProvider>
-              <body className={cn("font-sans antialiased", fontSans.variable)}>
-                {/* <Navbar /> */}
-                {children}
-              </body>
+              <AirstackProvider
+                apiKey={process.env.NEXT_PUBLIC_AIRSTACK_API_KEY ?? ""}
+              >
+                <body
+                  className={cn("font-sans antialiased", fontSans.variable)}
+                >
+                  {/* <Navbar /> */}
+                  {children}
+                </body>
+              </AirstackProvider>
             </ConnectKitProvider>
           </QueryClientProvider>
         </WagmiProvider>

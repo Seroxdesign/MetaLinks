@@ -1,13 +1,12 @@
 "use client";
 
 import ProfileCreationForm from "@/components/ProfileCreationForm/ProfileCreationForm";
-import { BackgroundBeams } from "@/components/background-beams";
 import { Suspense } from "react";
 
 const ProfileCreationComponent = () => {
   return (
     <main className="mt-16">
-        <ProfileCreationForm />
+      <ProfileCreationForm />
     </main>
   );
 };
