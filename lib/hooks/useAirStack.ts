@@ -7,27 +7,13 @@ import { airStackQuery } from "@/services/airstack";
 import { useLazyQuery, useQuery } from "@airstack/airstack-react";
 
 interface QueryResponse {
-  data: Data | null;
+  data: any | null;
   loading: boolean;
   error: Error | null;
 }
 
-interface Data {
-  Wallet: Wallet;
-}
-
 interface Error {
   message: string;
-}
-
-interface Wallet {
-  socials: Social[];
-  addresses: string[];
-}
-
-interface Social {
-  dappName: "lens" | "farcaster";
-  profileName: string;
 }
 
 type TAirStackQuery = {
@@ -42,9 +28,9 @@ type TAirStackQuery = {
  * - error: any error that occurred while loading the query.
  */
 export const useAirStack = ({ identity }: TAirStackQuery) => {
-  const { data, loading, error }: QueryResponse = useQuery<Data>(
+  const { data, loading, error }: QueryResponse = useQuery(
     airStackQuery,
-    { variables: { identity } },
+    { identity: identity },
     { cache: true }
   );
 
@@ -62,7 +48,7 @@ export const useAirStack = ({ identity }: TAirStackQuery) => {
  * - an object with the same properties as the object returned by useAirStack: data, loading, and error.
  */
 export const useAirStackWithManualTrigger = ({ identity }: TAirStackQuery) => {
-  const [fetch, { data, loading, error }] = useLazyQuery<Data>(
+  const [fetch, { data, loading, error }] = useLazyQuery(
     airStackQuery,
     { variables: { identity } },
     { cache: true }
