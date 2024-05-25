@@ -12,6 +12,7 @@ import { mainnet, polygon, sepolia } from "wagmi/chains";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ConnectKitProvider, getDefaultConfig } from "connectkit";
 import { AirstackProvider } from "@airstack/airstack-react";
+import SupabaseProvider from "@/app/providers/supabase";
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -88,12 +89,14 @@ export default function RootLayout({
               <AirstackProvider
                 apiKey={process.env.NEXT_PUBLIC_AIRSTACK_API_KEY ?? ""}
               >
-                <body
-                  className={cn("font-sans antialiased", fontSans.variable)}
-                >
-                  {/* <Navbar /> */}
-                  {children}
-                </body>
+                <SupabaseProvider>
+                  <body
+                    className={cn("font-sans antialiased", fontSans.variable)}
+                  >
+                    {/* <Navbar /> */}
+                    {children}
+                  </body>
+                </SupabaseProvider>
               </AirstackProvider>
             </ConnectKitProvider>
           </QueryClientProvider>

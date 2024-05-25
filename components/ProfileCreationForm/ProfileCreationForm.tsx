@@ -14,6 +14,8 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAccount } from "wagmi";
+import { useLogin } from "@/lib/hooks/useLogin";
+import { useSupabase } from "@/app/providers/supabase";
 
 const formSchema = z.object({
   username: z.string().min(4, "username should be atlease 4 characters"),
@@ -40,6 +42,8 @@ const ProfileCreationForm = () => {
   const { address, chainId } = useAccount();
 
   const [errorMsg, setErrorMsg] = useState<string | undefined>();
+  const { supabase, setToken } = useSupabase();
+  const { login, logout, isLoggedIn, checkLoggedIn, isLoggingIn } = useLogin();
 
   const [step, setStep] = useState<"userDetails" | "submitLinks">(
     "userDetails"
@@ -66,12 +70,13 @@ const ProfileCreationForm = () => {
 
   const handleFormSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      if (!isConnected && !address) {
-        handleConnectWallet();
-        return;
+      const loggedIn = await checkLoggedIn();
+      console.log("loggedIn", loggedIn);
+      if (!loggedIn) {
+        await login();
       }
 
-      const { backgroundImage, profileImage, links } = values;
+      const { backgroundImage, profileImage, links, username, bio } = values;
 
       // Upload image to IPFS
       const formImages = {
@@ -81,7 +86,18 @@ const ProfileCreationForm = () => {
           icon: link.icon,
         })),
       };
-      console.log("formImages",formImages)
+      console.log("formImages", formImages);
+
+      const res = await supabase
+        .from("users")
+        .update({
+          username,
+          bio,
+        })
+        .eq("address", address)
+        .select();
+
+      console.log("update.user", res);
 
       //TODO: FIX This later
       // const cid = await uploadFileToWeb3Storage<typeof formImages>({
