@@ -13,6 +13,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ConnectKitProvider, getDefaultConfig } from "connectkit";
 import { AirstackProvider } from "@airstack/airstack-react";
 import SupabaseProvider from "@/app/providers/supabase";
+import { Toaster } from "@/components/ui/toaster"
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -95,6 +96,7 @@ export default function RootLayout({
                   >
                     {/* <Navbar /> */}
                     {children}
+                    <Toaster />
                   </body>
                 </SupabaseProvider>
               </AirstackProvider>
