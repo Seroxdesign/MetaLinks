@@ -1,13 +1,14 @@
 import { createClient } from "@supabase/supabase-js";
 
 const SUPABASE_TABLE_USER = "users";
+import type { Database } from "@/types/supabase";
 
 export async function POST(request: Request) {
   const req = await request.json();
   const { address } = req;
   const nonce = Math.floor(Math.random() * 1000000);
 
-  const database = createClient(
+  const database = createClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL as string,
     process.env.SUPABASE_SERVICE_ROLE_KEY as string
   );

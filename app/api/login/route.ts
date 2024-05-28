@@ -1,10 +1,11 @@
 import { createClient } from "@supabase/supabase-js";
 import jwt from "jsonwebtoken";
 import { ethers } from "ethers";
+import type { Database } from "@/types/supabase";
 
 const SUPABASE_TABLE_USERS = "users";
 
-const supabase = createClient(
+const supabase = createClient<Database>(
   process.env.NEXT_PUBLIC_SUPABASE_URL as string,
   process.env.SUPABASE_SERVICE_ROLE_KEY as string
 );
@@ -34,7 +35,7 @@ export async function POST(request: Request) {
     .eq("address", address)
     .single();
 
-  if (!data) {
+  if (!data || !data?.auth) {
     return Response.json(
       { message: "The public user does not exist." },
       {
@@ -43,7 +44,7 @@ export async function POST(request: Request) {
     );
   }
 
-  if (data?.auth.genNonce !== nonce) {
+  if (data?.auth?.genNonce !== nonce) {
     return Response.json(
       { message: "The nonce does not match." },
       {

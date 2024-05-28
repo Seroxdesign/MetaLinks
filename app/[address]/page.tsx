@@ -44,6 +44,9 @@ import { z } from "zod";
 import type { TAttestations } from "@/lib/zod-utils";
 import Loader from "@/components/ui/loader";
 import { getTimeDifference } from "@/lib/get-time-diiference";
+import { useAirStack } from "@/lib/hooks/useAirStack";
+import { useSupabase } from "@/app/providers/supabase";
+import { Database } from "@/types/supabase";
 
 const FormSchema = z.object({
   attestation: z.string().min(2, {
@@ -205,12 +208,34 @@ const Page: React.FC = () => {
   // Get the address from the router params
   const router = useParams();
   const w3storage = useW3upClient();
+
   const address = router.address as string;
-  const {
-    loading: nftLoading,
-    error: nftError,
-    data: nfts,
-  } = useNFTCollectibles(address);
+  const airStack = useAirStack({ identity: address });
+  const [userProfile, setUserProfile] = useState<null | Database['public']['Tables']['users']['Row']>(null);
+  const { supabase } = useSupabase();
+
+
+  useEffect(() => {
+    getUserProfile();
+  }, [address]);
+
+  const getUserProfile = async () => {
+    if (address) {
+      const { data } = await supabase
+        .from("users")
+        .select()
+        .eq("address", address)
+        .single();
+        setUserProfile(data);
+    }
+  };
+
+  console.log("data", userProfile);
+  // const {
+  //   loading: nftLoading,
+  //   error: nftError,
+  //   data: nfts,
+  // } = useNFTCollectibles(address);
 
   const {
     data: hash,
@@ -275,20 +300,20 @@ const Page: React.FC = () => {
     }
   }
 
-  const processAllNfts = () => {
-    let nftData: any = [];
-    if (!nfts[0]) return [];
-    if (nfts[0]?.maticNfts?.ownedNfts)
-      nftData = [...nftData, ...nfts[0].maticNfts.ownedNfts];
-    if (nfts[0]?.mainnetNfts?.ownedNfts)
-      nftData = [...nftData, ...nfts[0].mainnetNfts.ownedNfts];
-    if (nfts[0]?.optimismNfts?.ownedNfts)
-      nftData = [...nftData, ...nfts[0].optimismNfts.ownedNfts];
-    return nftData;
-  };
-  const allNfts = processAllNfts().filter(
-    (nft: any) => nft.tokenType !== "ERC1155"
-  );
+  // const processAllNfts = () => {
+  //   let nftData: any = [];
+  //   if (!nfts[0]) return [];
+  //   if (nfts[0]?.maticNfts?.ownedNfts)
+  //     nftData = [...nftData, ...nfts[0].maticNfts.ownedNfts];
+  //   if (nfts[0]?.mainnetNfts?.ownedNfts)
+  //     nftData = [...nftData, ...nfts[0].mainnetNfts.ownedNfts];
+  //   if (nfts[0]?.optimismNfts?.ownedNfts)
+  //     nftData = [...nftData, ...nfts[0].optimismNfts.ownedNfts];
+  //   return nftData;
+  // };
+  // const allNfts = processAllNfts().filter(
+  //   (nft: any) => nft.tokenType !== "ERC1155"
+  // );
 
   // Fetch the profile data using Apollo useQuery hook
   const { loading, error, data } = useQuery(profileQuery, {
@@ -300,12 +325,13 @@ const Page: React.FC = () => {
   }
 
   // Render error message if user is not found
-  if (error || !data?.player[0]) {
+  if (error || !data?.player[0] || !userProfile) {
     return <p>Error: User not found</p>;
   }
 
   // Render the profile information
   const profile = data?.player[0]?.profile;
+
 
   return (
     <main className="relative top-0 left-0">
@@ -318,7 +344,7 @@ const Page: React.FC = () => {
         className="absolute top-0 left-0 object-cover md:h-96 min-h-48 w-full"
       />
       <div className="fixed flex gap-x-4 items-center top-3 right-3 z-10">
-        <MainDrawer username={profile?.username} />
+        <MainDrawer username={userProfile?.username} />
         <ConnectKitButton />
       </div>
       <Wrapper>
@@ -328,17 +354,17 @@ const Page: React.FC = () => {
               <img
                 className="rounded-full h-40 w-40 md:h-72 md:w-72 border border-[12px] border-[rgba(255,255,255,0.04)]"
                 alt="Picture of the author"
-                src={toHTTP(profile.profileImageURL ?? "")}
+                src={toHTTP(userProfile.profileImageIPFS ?? "")}
                 width={288}
                 height={288}
               />
             </div>
             <h1 className="font-bold mt-4 text-2xl text-white">
-              {profile?.name ?? ""}
+              {userProfile?.name ?? ""}
             </h1>
-            <h3 className="text-base text-white">@{profile?.username ?? ""}</h3>
+            <h3 className="text-base text-white">@{userProfile?.username ?? ""}</h3>
             <p className="text-white text-center text-base my-8">
-              {profile?.description ?? ""}
+              {userProfile?.bio ?? ""}
             </p>
             {/* Mint Button */}
             {/* <form onSubmit={(e) => submit(e, data?.player[0])}>
@@ -354,7 +380,7 @@ const Page: React.FC = () => {
               </TabsList>
               <TabsContent value="links">
                 <div className="w-full mt-8 flex flex-col items-center justify-center">
-                  {data?.player[0]?.links.map((link: any, index: number) => (
+                  {userProfile?.links?.map((link: any, index: number) => (
                     <LinkCard
                       key={link.name}
                       href={link.url}
@@ -366,7 +392,7 @@ const Page: React.FC = () => {
               </TabsContent>
               <TabsContent value="nfts">
                 <div className="grid md:grid-cols-3 grid-cols-2 gap-3 max-w-96 place-self-center mx-auto mt-8">
-                  {nftLoading && <p>Loading...</p>}
+                  {/* {nftLoading && <p>Loading...</p>}
                   {allNfts.map((nft: any) => {
                     const imageUri = nft.image.cachedUrl;
 
@@ -380,7 +406,7 @@ const Page: React.FC = () => {
                         height={128}
                       />
                     );
-                  })}
+                  })} */}
                 </div>
               </TabsContent>
               <TabsContent value="guilds">
@@ -401,7 +427,7 @@ const Page: React.FC = () => {
                 <div className="w-full mt-8 flex items-center justify-center">
                   <DonateCrypto
                     ethereumAddress={
-                      data?.player[0]?.ethereumAddress as `0x${string}`
+                      address as `0x${string}`
                     }
                   />
                 </div>

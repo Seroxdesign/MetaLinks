@@ -49,7 +49,7 @@ export function useCopy() {
   return { isCopied, copyToClipboard, resetCopyStatus };
 }
 
-function MoreOptionsDropdownMenu({ username }: { username?: string }) {
+function MoreOptionsDropdownMenu({ username }: { username?: string | null }) {
   const router = useRouter();
   const { copyToClipboard, isCopied } = useCopy();
 
