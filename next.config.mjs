@@ -11,6 +11,12 @@ const nextConfig = {
           },
           {
             protocol: 'https',
+            hostname: 'assets.airstack.xyz',
+            port: '',
+            pathname: '/**',
+          },
+          {
+            protocol: 'https',
             hostname: 'metadata.ens.domains',
             port: '',
             pathname: '/**',

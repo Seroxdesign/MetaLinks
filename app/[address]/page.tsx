@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 
-import { useQuery } from "@apollo/client";
 import { profileQuery } from "@/services/apollo";
 import { toHTTP } from "@/utils/ipfs";
 import { useParams } from "next/navigation";
@@ -47,6 +46,8 @@ import { getTimeDifference } from "@/lib/get-time-diiference";
 import { useAirStack } from "@/lib/hooks/useAirStack";
 import { useSupabase } from "@/app/providers/supabase";
 import { Database } from "@/types/supabase";
+import { useLazyQuery, useQuery } from "@airstack/airstack-react";
+import { GET_NFTS_QUERY } from "@/services/airstack";
 
 const FormSchema = z.object({
   attestation: z.string().min(2, {
@@ -208,12 +209,45 @@ const Page: React.FC = () => {
   // Get the address from the router params
   const router = useParams();
   const w3storage = useW3upClient();
+  const [nfts, setNfts] = useState([]);
 
   const address = router.address as string;
-  const airStack = useAirStack({ identity: address });
-  const [userProfile, setUserProfile] = useState<null | Database['public']['Tables']['users']['Row']>(null);
-  const { supabase } = useSupabase();
+  // const airStack = useAirStack({ identity: address });
+  const {
+    data: nftData,
+    loading: isNFTLoading,
+    error,
+  } = useQuery(GET_NFTS_QUERY, { Identity: [address] });
 
+  const [userProfile, setUserProfile] = useState<
+    null | Database["public"]["Tables"]["users"]["Row"]
+  >(null);
+
+  const { supabase } = useSupabase();
+  console.log("airStack", nftData, error);
+
+  useEffect(() => {
+    if (nftData && !isNFTLoading) {
+      const baseNfts = nftData.base.TokenBalance.map((tokenBalance) => {
+        return {
+          image: tokenBalance.tokenNfts?.contentValue?.image?.original,
+          address: tokenBalance?.tokenNfts?.address,
+        };
+      });
+
+      const ethereumNfts = nftData.ethereum.TokenBalance.map((tokenBalance) => {
+        return {
+          image: tokenBalance.tokenNfts?.contentValue?.image?.original,
+          address: tokenBalance.tokenNfts.address,
+        };
+      });
+
+      const allNfts = baseNfts
+        .concat(ethereumNfts)
+        .filter((nft) => !!nft.image);
+      setNfts(allNfts);
+    }
+  }, [nftData]);
 
   useEffect(() => {
     getUserProfile();
@@ -226,16 +260,11 @@ const Page: React.FC = () => {
         .select()
         .eq("address", address)
         .single();
-        setUserProfile(data);
+      setUserProfile(data);
     }
   };
 
-  console.log("data", userProfile);
-  // const {
-  //   loading: nftLoading,
-  //   error: nftError,
-  //   data: nfts,
-  // } = useNFTCollectibles(address);
+  console.log("nfts", nfts);
 
   const {
     data: hash,
@@ -300,38 +329,13 @@ const Page: React.FC = () => {
     }
   }
 
-  // const processAllNfts = () => {
-  //   let nftData: any = [];
-  //   if (!nfts[0]) return [];
-  //   if (nfts[0]?.maticNfts?.ownedNfts)
-  //     nftData = [...nftData, ...nfts[0].maticNfts.ownedNfts];
-  //   if (nfts[0]?.mainnetNfts?.ownedNfts)
-  //     nftData = [...nftData, ...nfts[0].mainnetNfts.ownedNfts];
-  //   if (nfts[0]?.optimismNfts?.ownedNfts)
-  //     nftData = [...nftData, ...nfts[0].optimismNfts.ownedNfts];
-  //   return nftData;
-  // };
-  // const allNfts = processAllNfts().filter(
-  //   (nft: any) => nft.tokenType !== "ERC1155"
-  // );
+  // if (loading) {
+  //   return <p></p>;
+  // }
 
-  // Fetch the profile data using Apollo useQuery hook
-  const { loading, error, data } = useQuery(profileQuery, {
-    variables: { address },
-  });
-
-  if (loading) {
-    return <p></p>;
-  }
-
-  // Render error message if user is not found
-  if (error || !data?.player[0] || !userProfile) {
+  if (!userProfile) {
     return <p>Error: User not found</p>;
-  }
-
-  // Render the profile information
-  const profile = data?.player[0]?.profile;
-
+  };
 
   return (
     <main className="relative top-0 left-0">
@@ -362,7 +366,9 @@ const Page: React.FC = () => {
             <h1 className="font-bold mt-4 text-2xl text-white">
               {userProfile?.name ?? ""}
             </h1>
-            <h3 className="text-base text-white">@{userProfile?.username ?? ""}</h3>
+            <h3 className="text-base text-white">
+              @{userProfile?.username ?? ""}
+            </h3>
             <p className="text-white text-center text-base my-8">
               {userProfile?.bio ?? ""}
             </p>
@@ -392,26 +398,26 @@ const Page: React.FC = () => {
               </TabsContent>
               <TabsContent value="nfts">
                 <div className="grid md:grid-cols-3 grid-cols-2 gap-3 max-w-96 place-self-center mx-auto mt-8">
-                  {/* {nftLoading && <p>Loading...</p>}
-                  {allNfts.map((nft: any) => {
-                    const imageUri = nft.image.cachedUrl;
+                  {isNFTLoading && <p>Loading...</p>}
+                  {nfts.map((nft: {image: string, address: string}) => {
+                    // const imageUri = nft.image.cachedUrl;
 
                     return (
                       <Image
-                        key={imageUri}
-                        src={imageUri}
+                        key={nft.image}
+                        src={nft.image}
                         alt="nft-item"
                         className="h-auto w-full max-w-full rounded-md min-h-32"
                         width={128}
                         height={128}
                       />
                     );
-                  })} */}
+                  })}
                 </div>
               </TabsContent>
               <TabsContent value="guilds">
                 <div className="w-full mt-8 flex flex-col items-center justify-center">
-                  {data?.player[0]?.guilds.map(
+                  {/* {data?.player[0]?.guilds.map(
                     ({ Guild: guild }: any, index: number) => (
                       <LinkCard
                         key={guild.name}
@@ -420,16 +426,12 @@ const Page: React.FC = () => {
                         image={toHTTP(guild.logo)}
                       />
                     )
-                  )}
+                  )} */}
                 </div>
               </TabsContent>
               <TabsContent value="donate">
                 <div className="w-full mt-8 flex items-center justify-center">
-                  <DonateCrypto
-                    ethereumAddress={
-                      address as `0x${string}`
-                    }
-                  />
+                  <DonateCrypto ethereumAddress={address as `0x${string}`} />
                 </div>
               </TabsContent>
               <TabsContent value="attestation">

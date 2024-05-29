@@ -1,4 +1,4 @@
-export const airStackQuery = `
+export const airStackQuery = /* GraphQL */ `
   query GetProfileInfo($identity: Identity!) {
     Wallet(input: { identity:  $identity, blockchain: ethereum }) {
       addresses
@@ -28,6 +28,41 @@ export const airStackQuery = `
         isXMTPEnabled
       }
     }
+    TokenBalances(
+      input: {
+        filter: {
+          owner: { _eq: $identity }
+          tokenType: { _in: [ERC721, ERC1155] }
+        }
+        blockchain: ethereum
+        limit: 50
+      }
+    ) {
+        TokenBalance {
+          tokenAddress
+          amount
+          formattedAmount
+          tokenType
+          tokenNfts {
+            address
+            tokenId
+            blockchain
+            contentValue {
+              image {
+                original
+              }
+            }
+          }
+        }
+        pageInfo {
+          nextCursor
+          prevCursor
+          hasNextPage
+          hasPrevPage
+        }
+    }
+
+
     farcasterSocials: Socials(
       input: {
         filter: { identity: { _eq: $identity }, dappName: { _eq: farcaster } }
@@ -91,4 +126,80 @@ export const airStackQuery = `
       }
     }
   }
+`;
+
+// TODO: cursor and limit
+export const GET_NFTS_QUERY = /* GraphQL */ `
+query GetNFTs($Identity: [Identity!]) {
+  ethereum: TokenBalances(
+    input: {
+      filter: {
+        owner: { _in: $Identity }
+        tokenType: { _in: [ERC1155, ERC721] }
+      }
+      blockchain: ethereum
+      limit: 50
+    }
+  ) {
+    TokenBalance {
+      tokenAddress
+      amount
+      formattedAmount
+      tokenType
+      token {
+        isSpam
+        name
+      }
+      tokenNfts {
+        address
+        tokenId
+        blockchain
+        contentValue {
+          image {
+            original
+          }
+        }
+      }
+    }
+    pageInfo {
+      nextCursor
+      prevCursor
+      hasNextPage
+      hasPrevPage
+    }
+  }
+  base: TokenBalances(
+    input: {
+      filter: {
+        owner: { _in: $Identity }
+        tokenType: { _in: [ERC1155, ERC721] }
+      }
+      blockchain: base
+      limit: 50
+    }
+  ) {
+    TokenBalance {
+      tokenAddress
+      amount
+      formattedAmount
+      tokenType
+      tokenNfts {
+        address
+        tokenId
+        blockchain
+        contentValue {
+          image {
+            original
+          }
+        }
+      }
+    }
+    pageInfo {
+      nextCursor
+      prevCursor
+      hasNextPage
+      hasPrevPage
+    }
+  }
+}
 `;
