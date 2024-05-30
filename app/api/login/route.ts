@@ -2,6 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import jwt from "jsonwebtoken";
 import { ethers } from "ethers";
 import type { Database } from "@/types/supabase";
+import { z } from "zod";
 
 const SUPABASE_TABLE_USERS = "users";
 
@@ -10,9 +11,15 @@ const supabase = createClient<Database>(
   process.env.SUPABASE_SERVICE_ROLE_KEY as string
 );
 
+const reqBody = z.object({
+  signedMessage: z.string(),
+  address: z.string(),
+  nonce: z.number(),
+});
+
 export async function POST(request: Request) {
   const req = await request.json();
-  const { signedMessage, address, nonce } = req;
+  const { signedMessage, address, nonce } = reqBody.parse(req);
   console.log("address.address", address, signedMessage);
 
   const message = `I am signing this message to authenticate my address with my account on Meta links.`;
@@ -35,16 +42,7 @@ export async function POST(request: Request) {
     .eq("address", address)
     .single();
 
-  if (!data || !data?.auth) {
-    return Response.json(
-      { message: "The public user does not exist." },
-      {
-        status: 404,
-      }
-    );
-  }
-
-  if (data?.auth?.genNonce !== nonce) {
+  if (data?.auth && typeof data.auth === "object" && "genNonce" in data.auth && data?.auth?.genNonce !== nonce) {
     return Response.json(
       { message: "The nonce does not match." },
       {
@@ -53,7 +51,7 @@ export async function POST(request: Request) {
     );
   }
 
-  console.log("data", data);
+  // console.log("data", data);
 
   let authUser;
   if (!data?.id) {
@@ -75,7 +73,7 @@ export async function POST(request: Request) {
     const { data: userData, error } = await supabase.auth.admin.getUserById(
       data.id
     );
-    console.log("userData", userData, error);
+    // console.log("userData", userData, error);
 
     if (error) {
       console.log("error getting user", error.status, error.message);
