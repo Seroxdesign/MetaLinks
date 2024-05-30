@@ -2,13 +2,11 @@
 
 import React, { useState, useEffect } from "react";
 
-import { profileQuery } from "@/services/apollo";
 import { toHTTP } from "@/utils/ipfs";
 import { useParams } from "next/navigation";
 import Wrapper from "@/components/Wrapper";
 import { FadeIn } from "@/components/FadeIn";
 import Image from "next/image";
-import { useNFTCollectibles } from "@/lib/hooks/useNFTCollectibles";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import DonateCrypto from "@/components/DonateCrypto";
 import { ConnectKitButton } from "connectkit";
@@ -18,42 +16,16 @@ import {
   WERK_NFT_CONTRACT_ADDRESS_SEPOLIA,
   META_LINKS_URL,
 } from "@/lib/constants";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import type { GetNfTsQuery, GetNfTsQueryVariables } from "@/graphql/types";
+
 import { WERKNFT_ABI } from "@/lib/WerkNFT";
 import { useW3upClient } from "@/lib/useW3upClient";
-import { useEAS } from "@/lib/hooks/useEAS";
-import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-} from "@/components/ui/form";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import type { TAttestations } from "@/lib/zod-utils";
-import Loader from "@/components/ui/loader";
-import { getTimeDifference } from "@/lib/get-time-diiference";
-import { useAirStack } from "@/lib/hooks/useAirStack";
+
 import { useSupabase } from "@/app/providers/supabase";
 import { Database } from "@/types/supabase";
-import { useLazyQuery, useQuery } from "@airstack/airstack-react";
+import { useQuery } from "@airstack/airstack-react";
 import { GET_NFTS_QUERY } from "@/services/airstack";
-
-const FormSchema = z.object({
-  attestation: z.string().min(2, {
-    message: "Attestation must be at least 2 characters.",
-  }),
-});
+import { Attestations } from "@/components/Attestations";
 
 function LinkCard({
   href,
@@ -91,160 +63,55 @@ function LinkCard({
   );
 }
 
-const AttestationItem = ({ timeCreated, attestationVal, attestor }: any) => {
-  const timeDifference = getTimeDifference(timeCreated);
-  return (
-    <div className="flex w-full bg-[#0e0e0e] flex-col px-6 py-4 justify-center rounded-2xl border-l border-t border-[rgba(255,255,255,0.1)] drop-shadow-md">
-      <p className="font-semibold text-lg mb-4">{attestationVal}</p>
-      <p className="font-light text-xs">By {attestor}</p>
-      <p className="font-light text-xs">{timeDifference}</p>
-    </div>
-  );
-};
-
-const Attestations = ({ address }: { address: string }) => {
-  const { attest, getAttestationsForRecipient, isLoading } = useEAS();
-  const [attestation, setAttestion] = useState<string>("");
-  const [attestations, setAttestations] = useState<TAttestations>([]);
-  const [isAttesting, setIsAttesting] = useState(false);
-
-  // TODO: later move it to tRPC
-  useEffect(() => {
-    const getAttestationData = async () => {
-      const attestationData = await getAttestationsForRecipient(address);
-      if (attestationData) {
-        setAttestations(attestationData);
-      }
-    };
-    getAttestationData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [address, isAttesting]);
-
-  const form = useForm<z.infer<typeof FormSchema>>({
-    resolver: zodResolver(FormSchema),
-    defaultValues: {
-      attestation: "",
-    },
-  });
-
-  async function handleAttest(data: z.infer<typeof FormSchema>) {
-    try {
-      const { attestation } = data;
-      setIsAttesting(true);
-      await attest(attestation, address);
-      form.reset();
-    } catch (err) {
-    } finally {
-      setIsAttesting(false);
-    }
-  }
-
-  return isLoading ? (
-    <p className="text-center">Loading...</p>
-  ) : (
-    <div className="max-w-xl flex flex-col items-center mx-auto">
-      <Dialog>
-        <DialogTrigger asChild>
-          <button className="flex items-center py-3 justify-center font-semibold text-white p-1 w-full hover:scale-105 transition-all bg-purple rounded-xl my-3 max-w-md">
-            Attest
-          </button>
-        </DialogTrigger>
-        <DialogContent className="sm:max-w-[550px] bg-transparent">
-          <DialogHeader>
-            <DialogTitle>Create Attestation</DialogTitle>
-          </DialogHeader>
-          <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(handleAttest)}
-              className="w-full space-y-6"
-            >
-              <FormField
-                control={form.control}
-                name="attestation"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <textarea
-                        placeholder="Write something..."
-                        className="w-full p-3 rounded-md min-h-24 bg-zinc-900"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              {isAttesting && <Loader />}
-
-              <DialogFooter>
-                <Button disabled={isAttesting} type="submit">
-                  Create
-                </Button>
-              </DialogFooter>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
-      <div className="flex flex-col gap-3 w-full">
-        {attestations?.map((att, i) => {
-          const attestor = att[3].value;
-          const timeCreated = att[1].value.value;
-
-          const attestationVal = att[0].value;
-          return (
-            <AttestationItem
-              key={i}
-              timeCreated={timeCreated}
-              attestor={attestor}
-              attestationVal={attestationVal.value}
-            />
-          );
-        })}
-      </div>
-    </div>
-  );
-};
+interface NFT {
+  image: string;
+  address: string;
+}
 
 const Page: React.FC = () => {
   // Get the address from the router params
   const router = useParams();
   const w3storage = useW3upClient();
-  const [nfts, setNfts] = useState([]);
+  const [nfts, setNfts] = useState<NFT[]>([]);
+  const [isProfileLoading, setIsProfileLoading] = useState(false);
 
   const address = router.address as string;
-  // const airStack = useAirStack({ identity: address });
   const {
     data: nftData,
     loading: isNFTLoading,
     error,
-  } = useQuery(GET_NFTS_QUERY, { Identity: [address] });
+  } = useQuery<GetNfTsQuery, GetNfTsQueryVariables>(GET_NFTS_QUERY, {
+    Identity: [address],
+  });
 
   const [userProfile, setUserProfile] = useState<
     null | Database["public"]["Tables"]["users"]["Row"]
   >(null);
 
   const { supabase } = useSupabase();
-  console.log("airStack", nftData, error);
 
   useEffect(() => {
     if (nftData && !isNFTLoading) {
-      const baseNfts = nftData.base.TokenBalance.map((tokenBalance) => {
-        return {
-          image: tokenBalance.tokenNfts?.contentValue?.image?.original,
-          address: tokenBalance?.tokenNfts?.address,
-        };
-      });
+      const baseNfts =
+        nftData?.base?.TokenBalance?.map((tokenBalance) => {
+          return {
+            image: tokenBalance.tokenNfts?.contentValue?.image?.original,
+            address: tokenBalance?.tokenNfts?.address,
+          };
+        }) ?? [];
 
-      const ethereumNfts = nftData.ethereum.TokenBalance.map((tokenBalance) => {
-        return {
-          image: tokenBalance.tokenNfts?.contentValue?.image?.original,
-          address: tokenBalance.tokenNfts.address,
-        };
-      });
+      const ethereumNfts =
+        nftData?.ethereum?.TokenBalance?.map((tokenBalance) => {
+          return {
+            image: tokenBalance.tokenNfts?.contentValue?.image?.original,
+            address: tokenBalance?.tokenNfts?.address,
+          };
+        }) ?? [];
 
       const allNfts = baseNfts
         .concat(ethereumNfts)
-        .filter((nft) => !!nft.image);
+        .filter((nft): nft is NFT => !!nft.image && !!nft.address);
+
       setNfts(allNfts);
     }
   }, [nftData]);
@@ -254,17 +121,22 @@ const Page: React.FC = () => {
   }, [address]);
 
   const getUserProfile = async () => {
-    if (address) {
-      const { data } = await supabase
-        .from("users")
-        .select()
-        .eq("address", address)
-        .single();
-      setUserProfile(data);
+    try {
+      setIsProfileLoading(true);
+      if (address) {
+        const { data } = await supabase
+          .from("users")
+          .select()
+          .eq("address", address)
+          .single();
+        setUserProfile(data);
+      }
+    } catch (err) {
+      console.log("something went wrong", err);
+    } finally {
+      setIsProfileLoading(false);
     }
   };
-
-  console.log("nfts", nfts);
 
   const {
     data: hash,
@@ -329,13 +201,13 @@ const Page: React.FC = () => {
     }
   }
 
-  // if (loading) {
-  //   return <p></p>;
-  // }
+  if (isProfileLoading) {
+    return <p></p>;
+  }
 
   if (!userProfile) {
     return <p>Error: User not found</p>;
-  };
+  }
 
   return (
     <main className="relative top-0 left-0">
@@ -380,7 +252,7 @@ const Page: React.FC = () => {
               <TabsList className="flex items-center justify-center">
                 <TabsTrigger value="links">Links</TabsTrigger>
                 <TabsTrigger value="nfts">NFTs</TabsTrigger>
-                <TabsTrigger value="guilds">Guilds</TabsTrigger>
+                {/* <TabsTrigger value="guilds">Guilds</TabsTrigger> */}
                 <TabsTrigger value="donate">Donate</TabsTrigger>
                 <TabsTrigger value="attestation">Attestation</TabsTrigger>
               </TabsList>
@@ -399,9 +271,8 @@ const Page: React.FC = () => {
               <TabsContent value="nfts">
                 <div className="grid md:grid-cols-3 grid-cols-2 gap-3 max-w-96 place-self-center mx-auto mt-8">
                   {isNFTLoading && <p>Loading...</p>}
-                  {nfts.map((nft: {image: string, address: string}) => {
-                    // const imageUri = nft.image.cachedUrl;
-
+                  {!isNFTLoading && nfts.length === 0 && <p>No NFTs Found</p>}
+                  {nfts.map((nft: { image: string; address: string }) => {
                     return (
                       <Image
                         key={nft.image}
@@ -415,9 +286,9 @@ const Page: React.FC = () => {
                   })}
                 </div>
               </TabsContent>
-              <TabsContent value="guilds">
+              {/* <TabsContent value="guilds">
                 <div className="w-full mt-8 flex flex-col items-center justify-center">
-                  {/* {data?.player[0]?.guilds.map(
+                  {data?.player[0]?.guilds.map(
                     ({ Guild: guild }: any, index: number) => (
                       <LinkCard
                         key={guild.name}
@@ -426,9 +297,9 @@ const Page: React.FC = () => {
                         image={toHTTP(guild.logo)}
                       />
                     )
-                  )} */}
+                  )}
                 </div>
-              </TabsContent>
+              </TabsContent> */}
               <TabsContent value="donate">
                 <div className="w-full mt-8 flex items-center justify-center">
                   <DonateCrypto ethereumAddress={address as `0x${string}`} />

@@ -16,6 +16,7 @@ import { useLogin } from "@/lib/hooks/useLogin";
 import { useSupabase } from "@/app/providers/supabase";
 import { useW3upClient } from "@/lib/useW3upClient";
 import { useToast } from "@/components/ui/use-toast";
+import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
   username: z.string().min(4, "username should be atlease 4 characters"),
@@ -64,6 +65,7 @@ const ProfileCreationForm = () => {
   const { isConnected, handleConnectWallet } = useConnectWallet();
   const { address, chainId } = useAccount();
   const { toast } = useToast();
+  const router = useRouter();
 
   const w3storage = useW3upClient();
 
@@ -143,9 +145,9 @@ const ProfileCreationForm = () => {
     try {
       setIsLoading(true);
       const loggedIn = await checkLoggedIn();
-      console.log("loggedIn", loggedIn);
+      let userAddress;
       if (!loggedIn) {
-        await login();
+        userAddress = await login();
       }
 
       const { backgroundImage, profileImage, links, username, bio } = values;
@@ -165,7 +167,7 @@ const ProfileCreationForm = () => {
           backgroundImageIPFS,
           links: linksArr,
         })
-        .eq("address", address)
+        .eq("address", address ?? (userAddress as string))
         .select();
 
       toast({
@@ -174,6 +176,7 @@ const ProfileCreationForm = () => {
       });
 
       form.reset();
+      router.push(`/${address}`);
       setIsLoading(false);
     } catch (error) {
       console.log("error", error);

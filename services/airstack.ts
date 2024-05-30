@@ -128,7 +128,6 @@ export const airStackQuery = /* GraphQL */ `
   }
 `;
 
-// TODO: cursor and limit
 export const GET_NFTS_QUERY = /* GraphQL */ `
 query GetNFTs($Identity: [Identity!]) {
   ethereum: TokenBalances(

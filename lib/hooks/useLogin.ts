@@ -7,16 +7,19 @@ import { useState, useCallback } from "react";
 import { useAccount, useSignMessage } from "wagmi";
 import { jwtDecode } from "jwt-decode";
 import { useSupabase } from "@/app/providers/supabase";
+import { useToast } from "@/components/ui/use-toast";
 
 export const useLogin = () => {
   const message = `I am signing this message to authenticate my address with my account on Meta links.`;
   const { isConnected, handleConnectWallet } = useConnectWallet();
-  const { supabase, setToken } = useSupabase();
+  const { setToken } = useSupabase();
 
   const { signMessageAsync } = useSignMessage();
   const { address: userAddress } = useAccount();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const { toast } = useToast();
+
 
   const checkLoggedIn = useCallback(() => {
     const token = Cookies.get("supabasetoken");
@@ -27,7 +30,6 @@ export const useLogin = () => {
     } else {
       // Use Supabase client to set the session:
       const decodedToken = jwtDecode(token);
-   
 
       if (!decodedToken.exp) return false;
 
@@ -52,8 +54,12 @@ export const useLogin = () => {
       body: JSON.stringify({
         address: userAddress,
       }),
-    }).then((res) => res.json());
-    console.log("signMessage.nonce", nonce);
+    })
+      .then((res) => res.json())
+      .catch((err) => {
+        console.log("errr fetching nonce", err);
+      });
+
     const signedMessage = await signMessageAsync({ message });
 
     const token = await fetch("/api/login", {
@@ -63,11 +69,20 @@ export const useLogin = () => {
         nonce: nonce.nonce,
         address: userAddress,
       }),
-    }).then((res) => res.json());
+    })
+      .then((res) => res.json())
+      .catch((err) => {
+        toast({
+          title: "Error",
+          description: `Login Failed error: ${err.message}`,
+        });
+        console.log("err login", err);
+      });
 
     setCookie("supabasetoken", token.token);
     setIsLoggingIn(false);
     setIsLoggedIn(true);
+    return userAddress;
   };
 
   async function logout() {

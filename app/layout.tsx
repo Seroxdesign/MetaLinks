@@ -2,8 +2,6 @@
 
 import { ThemeProvider } from "@/components/theme-provider";
 import { Inter as FontSans } from "next/font/google";
-import { client } from "@/services/apollo";
-import { ApolloProvider } from "@apollo/client";
 import { cn } from "@/lib/utils";
 import "./globals.css";
 import Script from "next/script";
@@ -61,7 +59,7 @@ export default function RootLayout({
 
   return (
     <html lang="en">
-      <ApolloProvider client={client}>
+      {/* <ApolloProvider client={client}> */}
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
@@ -103,7 +101,7 @@ export default function RootLayout({
             </ConnectKitProvider>
           </QueryClientProvider>
         </WagmiProvider>
-      </ApolloProvider>
+      {/* </ApolloProvider> */}
     </html>
   );
 }

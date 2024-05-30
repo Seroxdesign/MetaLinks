@@ -4,16 +4,15 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "pnpm predev && next build",
     "start": "next start",
     "lint": "next lint",
-    "generate": "pnpx graphql-codegen",
+    "generate": "pnpm graphql-codegen --config codegen.ts",
     "prestart": "pnpm generate",
     "predev": "pnpm generate"
   },
   "dependencies": {
     "@airstack/airstack-react": "^0.6.3",
-    "@apollo/client": "^3.9.2",
     "@ethereum-attestation-service/eas-sdk": "^1.5.0",
     "@ethersproject/address": "^5.7.0",
     "@hookform/resolvers": "^3.3.4",

@@ -3,7 +3,7 @@ import type { CodegenConfig } from "@graphql-codegen/cli";
 const config: CodegenConfig = {
   overwrite: true,
   schema: "https://api.airstack.xyz/gql",
-  documents: "@/services/airstack.ts",
+  documents: "services/**/*.ts",
   generates: {
     // Output type file
     "graphql/types.ts": {
