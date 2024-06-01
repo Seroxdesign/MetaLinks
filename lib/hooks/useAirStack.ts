@@ -34,6 +34,7 @@ export const useAirStack = ({ identity }: TAirStackQuery) => {
     { cache: true }
   );
 
+  console.log(data, loading, error)
   return {
     data,
     loading,
@@ -57,7 +58,6 @@ export const useAirStackWithManualTrigger = ({ identity }: TAirStackQuery) => {
   const fetchData = () => {
     fetch();
   };
-
   return {
     data,
     loading,
