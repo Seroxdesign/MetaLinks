@@ -6,7 +6,7 @@
 import { airStackQuery } from "@/services/airstack";
 import { useLazyQuery, useQuery } from "@airstack/airstack-react";
 
-interface QueryResponse {
+export interface QueryResponse {
   data: any | null;
   loading: boolean;
   error: Error | null;
@@ -34,7 +34,6 @@ export const useAirStack = ({ identity }: TAirStackQuery) => {
     { cache: true }
   );
 
-  console.log(data, loading, error)
   return {
     data,
     loading,

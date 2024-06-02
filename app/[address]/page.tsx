@@ -44,7 +44,7 @@ import { set, z } from "zod";
 import type { TAttestations } from "@/lib/zod-utils";
 import Loader from "@/components/ui/loader";
 import { getTimeDifference } from "@/lib/get-time-diiference";
-import { useAirStack } from "@/lib/hooks/useAirStack";
+import { QueryResponse, useAirStack } from "@/lib/hooks/useAirStack";
 
 const FormSchema = z.object({
   attestation: z.string().min(2, {
@@ -304,45 +304,11 @@ const Page: React.FC = () => {
 
   // Render error message if user is not found
   if (error || (!data?.player[0] && p?.data && !profileData)) {
-    setProfileData({
-      username: p?.data?.Wallet?.primaryDomain?.name,
-      profileImageURL: p?.data?.farcasterSocials.Social?.[0].profileImage,
-      name: p?.data?.farcasterSocials.Social?.[0].profileDisplayName,
-      description: p?.data?.farcasterSocials.Social?.[0].profileBio,
-      links: [
-        {
-          name: "farcaster",
-          url: `https://warpcast.com/${p?.data?.farcasterSocials.Social?.[0].profileName}`,
-        },
-        {
-          name: "lens",
-          url: `https://hey.xyz/${
-            p?.data?.lensSocials.Social?.[0].profileName.split("@")[1]
-          }`,
-        },
-      ],
-    });
+    setProfileData(createProfileData(p));
   }
 
   // Render the profile information
-  const profile = data?.player[0]?.profile || {
-    username: p?.data?.Wallet?.primaryDomain?.name,
-    profileImageURL: p?.data?.farcasterSocials.Social?.[0].profileImage,
-    name: p?.data?.farcasterSocials.Social?.[0].profileDisplayName,
-    description: p?.data?.farcasterSocials.Social?.[0].profileBio,
-    links: [
-      {
-        name: "farcaster",
-        url: `https://warpcast.com/${p?.data?.farcasterSocials.Social?.[0].profileName}`,
-      },
-      {
-        name: "lens",
-        url: `https://hey.xyz/${
-          p?.data?.lensSocials.Social?.[0].profileName.split("@")[1]
-        }`,
-      },
-    ],
-  };
+  const profile = data?.player[0]?.profile || createProfileData(p);
 
   const links = data?.player[0]?.links || profile.links;
 
@@ -457,3 +423,22 @@ const Page: React.FC = () => {
 };
 
 export default Page;
+
+const createProfileData = (p: QueryResponse) => ({
+  username: p?.data?.Wallet?.primaryDomain?.name,
+  profileImageURL: p?.data?.farcasterSocials.Social?.[0].profileImage,
+  name: p?.data?.farcasterSocials.Social?.[0].profileDisplayName,
+  description: p?.data?.farcasterSocials.Social?.[0].profileBio,
+  links: [
+    {
+      name: "farcaster",
+      url: `https://warpcast.com/${p?.data?.farcasterSocials.Social?.[0].profileName}`,
+    },
+    {
+      name: "lens",
+      url: `https://hey.xyz/${
+        p?.data?.lensSocials.Social?.[0].profileName.split("@")[1]
+      }`,
+    },
+  ],
+});
