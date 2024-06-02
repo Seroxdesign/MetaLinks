@@ -303,29 +303,45 @@ const Page: React.FC = () => {
   }
 
   // Render error message if user is not found
-  if (error || !data?.player[0] && p?.data && !profileData) {
+  if (error || (!data?.player[0] && p?.data && !profileData)) {
     setProfileData({
       username: p?.data?.Wallet?.primaryDomain?.name,
-      profileImageURL: p?.data?.farcasterSocials.Social[0].profileImage,
-      name: p?.data?.farcasterSocials.Social[0].profileDisplayName,
-      description: p?.data?.farcasterSocials.Social[0].profileBio,
+      profileImageURL: p?.data?.farcasterSocials.Social?.[0].profileImage,
+      name: p?.data?.farcasterSocials.Social?.[0].profileDisplayName,
+      description: p?.data?.farcasterSocials.Social?.[0].profileBio,
       links: [
-        { name: "farcaster", url: `https://warpcast.com/${p?.data?.farcasterSocials.Social[0].profileName}` },
-        { name: "lens", url: `https://hey.xyz/${p?.data?.lensSocials.Social[0].profileName.split('@')[1]}` },
-      ]
+        {
+          name: "farcaster",
+          url: `https://warpcast.com/${p?.data?.farcasterSocials.Social?.[0].profileName}`,
+        },
+        {
+          name: "lens",
+          url: `https://hey.xyz/${
+            p?.data?.lensSocials.Social?.[0].profileName.split("@")[1]
+          }`,
+        },
+      ],
     });
   }
 
   // Render the profile information
   const profile = data?.player[0]?.profile || {
     username: p?.data?.Wallet?.primaryDomain?.name,
-    profileImageURL: p?.data?.farcasterSocials.Social[0].profileImage,
-    name: p?.data?.farcasterSocials.Social[0].profileDisplayName,
-    description: p?.data?.farcasterSocials.Social[0].profileBio,
+    profileImageURL: p?.data?.farcasterSocials.Social?.[0].profileImage,
+    name: p?.data?.farcasterSocials.Social?.[0].profileDisplayName,
+    description: p?.data?.farcasterSocials.Social?.[0].profileBio,
     links: [
-      { name: "farcaster", url: `https://warpcast.com/${p?.data?.farcasterSocials.Social[0].profileName}` },
-      { name: "lens", url: `https://hey.xyz/${p?.data?.lensSocials.Social[0].profileName.split('@')[1]}` },
-    ]
+      {
+        name: "farcaster",
+        url: `https://warpcast.com/${p?.data?.farcasterSocials.Social?.[0].profileName}`,
+      },
+      {
+        name: "lens",
+        url: `https://hey.xyz/${
+          p?.data?.lensSocials.Social?.[0].profileName.split("@")[1]
+        }`,
+      },
+    ],
   };
 
   const links = data?.player[0]?.links || profile.links;

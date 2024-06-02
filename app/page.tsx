@@ -27,7 +27,7 @@ export default function Home() {
           <div className="flex z-50 items-center mt-4 justify-center">
             <ClaimYourProfileButton />
           </div>
-          <div className="flex w-full min-w-lg items-center space-x-2 mt-16">
+          <div className="flex flex-col w-full min-w-lg space-x-2 mt-16">
             <SearchProfilesComponent />
           </div>
         </div>
