@@ -32,7 +32,6 @@ const SearchProfile = ({
     const searchQuery = form.getValues("searchQuery");
     const address = await checkAndReturnAddress(searchQuery);
 
-    console.log({ address, formValues: form.getValues() });
     if (address) router.push(`/${address}`);
     else setUserInputError("Please enter valid ENS or ETH address.");
     setSubmitting(false);
