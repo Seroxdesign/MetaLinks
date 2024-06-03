@@ -342,7 +342,7 @@ const Page: React.FC = () => {
               </h3>
               <div className="flex flex-col items-center mt-4">
                 <h1 className="text-xl font-light text-[#662DDF]">
-                  {score && typeof score === "string" ? score : "0"}
+                  {score ?? "0"}
                 </h1>
                 <p className="text-[10px]">Gitcoin Passport Score</p>
               </div>
