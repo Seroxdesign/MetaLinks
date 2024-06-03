@@ -40,10 +40,11 @@ import {
 } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { set, z } from "zod";
 import type { TAttestations } from "@/lib/zod-utils";
 import Loader from "@/components/ui/loader";
 import { getTimeDifference } from "@/lib/get-time-diiference";
+import { QueryResponse, useAirStack } from "@/lib/hooks/useAirStack";
 
 const FormSchema = z.object({
   attestation: z.string().min(2, {
@@ -203,6 +204,7 @@ const Attestations = ({ address }: { address: string }) => {
 
 const Page: React.FC = () => {
   // Get the address from the router params
+  const [profileData, setProfileData] = useState<any>();
   const router = useParams();
   const w3storage = useW3upClient();
   const address = router.address as string;
@@ -289,6 +291,7 @@ const Page: React.FC = () => {
   const allNfts = processAllNfts().filter(
     (nft: any) => nft.tokenType !== "ERC1155"
   );
+  const p = useAirStack({ identity: address });
 
   // Fetch the profile data using Apollo useQuery hook
   const { loading, error, data } = useQuery(profileQuery, {
@@ -300,12 +303,14 @@ const Page: React.FC = () => {
   }
 
   // Render error message if user is not found
-  if (error || !data?.player[0]) {
-    return <p>Error: User not found</p>;
+  if (error || (!data?.player[0] && p?.data && !profileData)) {
+    setProfileData(createProfileData(p));
   }
 
   // Render the profile information
-  const profile = data?.player[0]?.profile;
+  const profile = data?.player[0]?.profile || createProfileData(p);
+
+  const links = data?.player[0]?.links || profile.links;
 
   return (
     <main className="relative top-0 left-0">
@@ -354,7 +359,7 @@ const Page: React.FC = () => {
               </TabsList>
               <TabsContent value="links">
                 <div className="w-full mt-8 flex flex-col items-center justify-center">
-                  {data?.player[0]?.links.map((link: any, index: number) => (
+                  {links.map((link: any, index: number) => (
                     <LinkCard
                       key={link.name}
                       href={link.url}
@@ -418,3 +423,22 @@ const Page: React.FC = () => {
 };
 
 export default Page;
+
+const createProfileData = (p: QueryResponse) => ({
+  username: p?.data?.Wallet?.primaryDomain?.name,
+  profileImageURL: p?.data?.farcasterSocials.Social?.[0].profileImage,
+  name: p?.data?.farcasterSocials.Social?.[0].profileDisplayName,
+  description: p?.data?.farcasterSocials.Social?.[0].profileBio,
+  links: [
+    {
+      name: "farcaster",
+      url: `https://warpcast.com/${p?.data?.farcasterSocials.Social?.[0].profileName}`,
+    },
+    {
+      name: "lens",
+      url: `https://hey.xyz/${
+        p?.data?.lensSocials.Social?.[0].profileName.split("@")[1]
+      }`,
+    },
+  ],
+});

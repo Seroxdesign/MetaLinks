@@ -3,11 +3,11 @@
 // https://github.com/Airstack-xyz/airstack-web-sdk
 // https://app.airstack.xyz/query/UMgiOv8Uwk?_gl=1*1jhw5ra*_ga*MTEwOTIxNDU0MC4xNzE1NzEwMzI5*_ga_6PP294SC61*MTcxNTk1Nzc5Ny4zLjEuMTcxNTk2MzA1Ny4wLjAuMA..
 
-import { airStackQuery } from "@/services/airstack";
+import { AirStackQueryResponse, airStackQuery } from "@/services/airstack";
 import { useLazyQuery, useQuery } from "@airstack/airstack-react";
 
-interface QueryResponse {
-  data: any | null;
+export interface QueryResponse {
+  data: AirStackQueryResponse | null;
   loading: boolean;
   error: Error | null;
 }
@@ -57,7 +57,6 @@ export const useAirStackWithManualTrigger = ({ identity }: TAirStackQuery) => {
   const fetchData = () => {
     fetch();
   };
-
   return {
     data,
     loading,

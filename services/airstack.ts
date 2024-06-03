@@ -92,3 +92,85 @@ export const airStackQuery = `
     }
   }
 `;
+
+// Define types for the query response
+export interface AirStackQueryResponse {
+  Wallet: {
+    addresses: string[];
+    primaryDomain: {
+      name: string;
+      avatar: string;
+      tokenNft: {
+        contentValue: {
+          image: {
+            small: string;
+          };
+        };
+      };
+    } | null;
+    domains: Array<{
+      name: string;
+      avatar: string;
+      tokenNft: {
+        contentValue: {
+          image: {
+            small: string;
+          };
+        };
+      };
+    }>;
+    xmtp: {
+      isXMTPEnabled: boolean;
+    };
+  };
+  farcasterSocials: {
+    Social: Array<{
+      isDefault: boolean;
+      blockchain: string;
+      dappName: string;
+      profileName: string;
+      profileDisplayName: string;
+      profileHandle: string;
+      profileImage: string;
+      profileBio: string;
+      followerCount: number;
+      followingCount: number;
+      profileTokenId: string;
+      profileTokenAddress: string;
+      profileCreatedAtBlockTimestamp: string;
+      profileImageContentValue: {
+        image: {
+          small: string;
+        };
+      };
+      socialCapital: {
+        socialCapitalScore: number;
+      };
+    }>;
+  };
+  lensSocials: {
+    Social: Array<{
+      isDefault: boolean;
+      blockchain: string;
+      dappName: string;
+      profileName: string;
+      profileDisplayName: string;
+      profileHandle: string;
+      profileImage: string;
+      profileBio: string;
+      followerCount: number;
+      followingCount: number;
+      profileTokenId: string;
+      profileTokenAddress: string;
+      profileCreatedAtBlockTimestamp: string;
+      profileImageContentValue: {
+        image: {
+          small: string;
+        };
+      };
+      socialCapital: {
+        socialCapitalScore: number;
+      };
+    }>;
+  };
+}
