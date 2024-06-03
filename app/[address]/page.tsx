@@ -45,6 +45,8 @@ import type { TAttestations } from "@/lib/zod-utils";
 import Loader from "@/components/ui/loader";
 import { getTimeDifference } from "@/lib/get-time-diiference";
 import { QueryResponse, useAirStack } from "@/lib/hooks/useAirStack";
+import { BackgroundBeams } from "@/components/background-beams";
+import { useGetGitcoinPassportScore } from "@/lib/hooks/useGetGitcoinPassportScore";
 
 const FormSchema = z.object({
   attestation: z.string().min(2, {
@@ -213,6 +215,7 @@ const Page: React.FC = () => {
     error: nftError,
     data: nfts,
   } = useNFTCollectibles(address);
+  const { score } = useGetGitcoinPassportScore(address);
 
   const {
     data: hash,
@@ -313,112 +316,115 @@ const Page: React.FC = () => {
   const links = data?.player[0]?.links || profile.links;
 
   return (
-    <main className="relative top-0 left-0">
-      <Image
-        alt="background-image"
-        src="/Banner.svg"
-        height="380"
-        width="2000"
-        style={{ zIndex: -2 }}
-        className="absolute top-0 left-0 object-cover md:h-96 min-h-48 w-full"
-      />
-      <div className="fixed flex gap-x-4 items-center top-3 right-3 z-10">
-        <MainDrawer username={profile?.username} />
-        <ConnectKitButton />
-      </div>
-      <Wrapper>
-        <FadeIn>
-          <div className="flex items-center flex-col mx-auto w-full justify-center px-2 md:px-8">
-            <div className="h-40 w-40 mt-16 md:mt-32 md:h-72 md:w-72">
-              <img
-                className="rounded-full h-40 w-40 md:h-72 md:w-72 border border-[12px] border-[rgba(255,255,255,0.04)]"
-                alt="Picture of the author"
-                src={toHTTP(profile.profileImageURL ?? "")}
-                width={288}
-                height={288}
-              />
-            </div>
-            <h1 className="font-bold mt-4 text-2xl text-white">
-              {profile?.name ?? ""}
-            </h1>
-            <h3 className="text-base text-white">@{profile?.username ?? ""}</h3>
-            <p className="text-white text-center text-base my-8">
-              {profile?.description ?? ""}
-            </p>
-            {/* Mint Button */}
-            {/* <form onSubmit={(e) => submit(e, data?.player[0])}>
+    <>
+      <main className="relative top-0 left-0">
+        <div className="fixed flex gap-x-4 items-center top-3 right-3 z-10">
+          <MainDrawer username={profile?.username} />
+          <ConnectKitButton />
+        </div>
+        <Wrapper>
+          <FadeIn>
+            <div className="flex items-center flex-col mx-auto w-full justify-center px-2 md:px-8">
+              <div className="h-40 w-40 mt-16 md:mt-32 md:h-72 md:w-72">
+                <img
+                  className="rounded-full h-40 w-40 md:h-72 md:w-72 border border-[12px] border-[rgba(255,255,255,0.04)]"
+                  alt="Picture of the author"
+                  src={toHTTP(profile.profileImageURL ?? "")}
+                  width={288}
+                  height={288}
+                />
+              </div>
+              <h1 className="font-bold mt-4 text-2xl text-white">
+                {profile?.name ?? ""}
+              </h1>
+              <h3 className="text-base text-white">
+                @{profile?.username ?? ""}
+              </h3>
+              <div className="flex flex-col items-center mt-4">
+                <h1 className="text-xl font-light text-[#662DDF]">
+                  {score ?? "0"}
+                </h1>
+                <p className="text-[10px]">Gitcoin Passport Score</p>
+              </div>
+              <p className="text-white text-center text-base my-4">
+                {profile?.description ?? ""}
+              </p>
+              {/* Mint Button */}
+              {/* <form onSubmit={(e) => submit(e, data?.player[0])}>
               <button type="submit">Mint</button>
             </form> */}
-            <Tabs defaultValue="links" className="w-full">
-              <TabsList className="flex items-center justify-center">
-                <TabsTrigger value="links">Links</TabsTrigger>
-                <TabsTrigger value="nfts">NFTs</TabsTrigger>
-                <TabsTrigger value="guilds">Guilds</TabsTrigger>
-                <TabsTrigger value="donate">Donate</TabsTrigger>
-                <TabsTrigger value="attestation">Attestation</TabsTrigger>
-              </TabsList>
-              <TabsContent value="links">
-                <div className="w-full mt-8 flex flex-col items-center justify-center">
-                  {links.map((link: any, index: number) => (
-                    <LinkCard
-                      key={link.name}
-                      href={link.url}
-                      title={link.name}
-                      image="/LinkDefaultIcon.svg"
-                    />
-                  ))}
-                </div>
-              </TabsContent>
-              <TabsContent value="nfts">
-                <div className="grid md:grid-cols-3 grid-cols-2 gap-3 max-w-96 place-self-center mx-auto mt-8">
-                  {nftLoading && <p>Loading...</p>}
-                  {allNfts.map((nft: any) => {
-                    const imageUri = nft.image.cachedUrl;
-
-                    return (
-                      <Image
-                        key={imageUri}
-                        src={imageUri}
-                        alt="nft-item"
-                        className="h-auto w-full max-w-full rounded-md min-h-32"
-                        width={128}
-                        height={128}
-                      />
-                    );
-                  })}
-                </div>
-              </TabsContent>
-              <TabsContent value="guilds">
-                <div className="w-full mt-8 flex flex-col items-center justify-center">
-                  {data?.player[0]?.guilds.map(
-                    ({ Guild: guild }: any, index: number) => (
+              <Tabs defaultValue="links" className="w-full">
+                <TabsList className="flex items-center justify-center">
+                  <TabsTrigger value="links">Links</TabsTrigger>
+                  <TabsTrigger value="nfts">NFTs</TabsTrigger>
+                  <TabsTrigger value="guilds">Guilds</TabsTrigger>
+                  <TabsTrigger value="donate">Donate</TabsTrigger>
+                  <TabsTrigger value="attestation">Attestation</TabsTrigger>
+                </TabsList>
+                <TabsContent value="links">
+                  <div className="w-full mt-8 flex flex-col items-center justify-center">
+                    {links.map((link: any, index: number) => (
                       <LinkCard
-                        key={guild.name}
-                        href={"/"}
-                        title={guild.name}
-                        image={toHTTP(guild.logo)}
+                        key={link.name}
+                        href={link.url}
+                        title={link.name}
+                        image="/LinkDefaultIcon.svg"
                       />
-                    )
-                  )}
-                </div>
-              </TabsContent>
-              <TabsContent value="donate">
-                <div className="w-full mt-8 flex items-center justify-center">
-                  <DonateCrypto
-                    ethereumAddress={
-                      data?.player[0]?.ethereumAddress as `0x${string}`
-                    }
-                  />
-                </div>
-              </TabsContent>
-              <TabsContent value="attestation">
-                <Attestations address={address} />
-              </TabsContent>
-            </Tabs>
-          </div>
-        </FadeIn>
-      </Wrapper>
-    </main>
+                    ))}
+                  </div>
+                </TabsContent>
+                <TabsContent value="nfts">
+                  <div className="grid md:grid-cols-3 grid-cols-2 gap-3 max-w-96 place-self-center mx-auto mt-8">
+                    {nftLoading && <p>Loading...</p>}
+                    {allNfts.map((nft: any) => {
+                      const imageUri = nft.image.cachedUrl;
+
+                      return (
+                        <Image
+                          key={imageUri}
+                          src={imageUri}
+                          alt="nft-item"
+                          className="h-auto w-full max-w-full rounded-md min-h-32"
+                          width={128}
+                          height={128}
+                        />
+                      );
+                    })}
+                  </div>
+                </TabsContent>
+                <TabsContent value="guilds">
+                  <div className="w-full mt-8 flex flex-col items-center justify-center">
+                    {data?.player[0]?.guilds.map(
+                      ({ Guild: guild }: any, index: number) => (
+                        <LinkCard
+                          key={guild.name}
+                          href={"/"}
+                          title={guild.name}
+                          image={toHTTP(guild.logo)}
+                        />
+                      )
+                    )}
+                  </div>
+                </TabsContent>
+                <TabsContent value="donate">
+                  <div className="w-full mt-8 flex items-center justify-center">
+                    <DonateCrypto
+                      ethereumAddress={
+                        data?.player[0]?.ethereumAddress as `0x${string}`
+                      }
+                    />
+                  </div>
+                </TabsContent>
+                <TabsContent value="attestation">
+                  <Attestations address={address} />
+                </TabsContent>
+              </Tabs>
+            </div>
+          </FadeIn>
+        </Wrapper>
+      </main>
+      <BackgroundBeams />
+    </>
   );
 };
 
