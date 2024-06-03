@@ -24,7 +24,7 @@ const SearchProfile = ({
     setSubmitting(true);
     const address = await checkAndReturnAddress(searchQuery);
     if (address) router.push(`/${address}`);
-    else setUserInputError("Please enter valid username, name or ETH address.");
+    else setUserInputError("Please enter valid ENS or ETH address.");
     setSubmitting(false);
   };
 
@@ -38,7 +38,7 @@ const SearchProfile = ({
       >
         <Input
           type="text"
-          placeholder="Enter username, name or ETH address"
+          placeholder="Enter ENS or ETH address"
           className="rounded-xl w-[85%] md:w-[30rem] h-[2.5rem]"
           value={searchQuery}
           onChange={(e) => {
