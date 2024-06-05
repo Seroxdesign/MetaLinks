@@ -106,7 +106,6 @@ const Attestations = ({ address }: { address: string }) => {
   const [attestation, setAttestion] = useState<string>("");
   const [attestations, setAttestations] = useState<TAttestations>([]);
   const [isAttesting, setIsAttesting] = useState(false);
-
   // TODO: later move it to tRPC
   useEffect(() => {
     const getAttestationData = async () => {
@@ -186,6 +185,7 @@ const Attestations = ({ address }: { address: string }) => {
       </Dialog>
       <div className="flex flex-col gap-3 w-full">
         {attestations?.map((att, i) => {
+          console.log(attestations)
           const attestor = att[3].value;
           const timeCreated = att[1].value.value;
 
@@ -274,7 +274,6 @@ const Page: React.FC = () => {
           payoutStrategyId,
         ],
       });
-      console.log("res", res);
     } catch (err) {
       console.log("err", err);
     }
@@ -309,7 +308,7 @@ const Page: React.FC = () => {
   if (error || (!data?.player[0] && p?.data && !profileData)) {
     setProfileData(createProfileData(p));
   }
-
+  console.log('p',p )
   // Render the profile information
   const profile = data?.player[0]?.profile || createProfileData(p);
 
@@ -346,7 +345,7 @@ const Page: React.FC = () => {
                 </h1>
                 <p className="text-[10px]">Gitcoin Passport Score</p>
               </div>
-              <p className="text-white text-center text-base my-4">
+              <p className="text-white text-center text-base my-4" style={{width: '400px'}}>
                 {profile?.description ?? ""}
               </p>
               {/* Mint Button */}
@@ -430,12 +429,11 @@ const Page: React.FC = () => {
 
 export default Page;
 
-const createProfileData = (p: QueryResponse) => ({
-  username: p?.data?.Wallet?.primaryDomain?.name,
-  profileImageURL: p?.data?.farcasterSocials.Social?.[0].profileImage,
-  name: p?.data?.farcasterSocials.Social?.[0].profileDisplayName,
-  description: p?.data?.farcasterSocials.Social?.[0].profileBio,
-  links: [
+const createProfileData = (p: QueryResponse) => {
+
+  let website = p?.data?.farcasterSocials.Social?.[0].website || p?.data?.lensSocials.Social?.[0].website || null
+  let twitter = p?.data?.farcasterSocials.Social?.[0].twitterUserName || p?.data?.lensSocials.Social?.[0].twitterUserName || null
+  const links = [
     {
       name: "farcaster",
       url: `https://warpcast.com/${p?.data?.farcasterSocials.Social?.[0].profileName}`,
@@ -446,5 +444,25 @@ const createProfileData = (p: QueryResponse) => ({
         p?.data?.lensSocials.Social?.[0].profileName.split("@")[1]
       }`,
     },
-  ],
-});
+  ]
+  if (website) {
+    links.push({
+      name: "website",
+      url: website,
+    })
+  }
+  if (twitter) {
+    links.push({
+      name: "twitter",
+      url: `https://twitter.com/${twitter}`,
+    })
+  }
+  return {
+    username: p?.data?.Wallet?.primaryDomain?.name,
+    profileImageURL: p?.data?.farcasterSocials.Social?.[0].profileImage,
+    name: p?.data?.farcasterSocials.Social?.[0].profileDisplayName,
+    description: p?.data?.farcasterSocials.Social?.[0].profileBio,
+    links
+  }
+}
+

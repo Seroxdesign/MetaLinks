@@ -1,9 +1,10 @@
 export function getTimeDifference(dateString: string): string {
-    const givenDate = new Date(dateString);
+    let givenDate = new Date(dateString);
     const currentDate = new Date();
   
     if (isNaN(givenDate.getTime())) {
-      throw new Error("Invalid date format");
+      givenDate = new Date(parseInt(dateString) * 1000);
+      // throw new Error("Invalid date format");
     }
   
     const diffInMs = currentDate.getTime() - givenDate.getTime();

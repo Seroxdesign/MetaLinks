@@ -1,5 +1,17 @@
 export const airStackQuery = `
   query GetProfileInfo($identity: Identity!) {
+    Domains(
+      input: {filter: {owner: { _eq: $identity }}, blockchain: ethereum}
+    ) {
+      Domain {
+        tokenAddress
+        tokenId
+        avatar
+        dappName
+        dappSlug
+        name
+      }
+    }
     Wallet(input: { identity:  $identity, blockchain: ethereum }) {
       addresses
       primaryDomain {
@@ -36,6 +48,9 @@ export const airStackQuery = `
       }
     ) {
       Social {
+        twitterUserName
+        profileUrl
+        website
         isDefault
         blockchain
         dappName
@@ -67,6 +82,8 @@ export const airStackQuery = `
       }
     ) {
       Social {
+        twitterUserName
+        profileUrl        website
         isDefault
         blockchain
         dappName
@@ -138,6 +155,8 @@ export interface AirStackQueryResponse {
       profileTokenId: string;
       profileTokenAddress: string;
       profileCreatedAtBlockTimestamp: string;
+      twitterUserName: string;
+      website: string;
       profileImageContentValue: {
         image: {
           small: string;
@@ -163,6 +182,8 @@ export interface AirStackQueryResponse {
       profileTokenId: string;
       profileTokenAddress: string;
       profileCreatedAtBlockTimestamp: string;
+      twitterUserName: string;
+      website: string;
       profileImageContentValue: {
         image: {
           small: string;

@@ -96,14 +96,15 @@ export const useEAS = () => {
           variables: { recipient: checkSumAddress },
         }),
       });
-
       // Parse response JSON
       const responseData = await response.json();
       const schemaEncoder = new SchemaEncoder(
         "string attestation,string timeCreated,string xp"
       );
-
-      const decodedData = responseData?.data?.attestations.map(
+      const res = responseData?.data?.attestations.filter((attestation: any) => {
+        return !attestation.data.includes("sig");
+      });
+      const decodedData = res.map(
         (attestation: any) =>
           schemaEncoder.decodeData(attestation.data).concat([
             {
@@ -114,7 +115,6 @@ export const useEAS = () => {
             },
           ])
       );
-
       const parsedData= ZAttestations.parse(decodedData)
 
       return parsedData;
