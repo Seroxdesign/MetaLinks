@@ -11,20 +11,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import DonateCrypto from "@/components/DonateCrypto";
 import { ConnectKitButton } from "connectkit";
 import MainDrawer from "@/components/MoreOptionsDropdown";
-import { useWriteContract } from "wagmi";
-import {
-  WERK_NFT_CONTRACT_ADDRESS_SEPOLIA,
-  META_LINKS_URL,
-} from "@/lib/constants";
-
-import { WERKNFT_ABI } from "@/lib/WerkNFT";
-import { useW3upClient } from "@/lib/useW3upClient";
 
 import { Attestations } from "@/components/Attestations";
 import { useGetGitcoinPassportScore } from "@/lib/hooks/useGetGitcoinPassportScore";
 import { useGetUserProfile } from "@/lib/hooks/useGetUserProfile";
 import { useGetNfts } from "@/lib/hooks/useGetNfts";
 import { BackgroundBeams } from "@/components/background-beams";
+import ThreeDotsLoader from "@/components/ThreeDotsLoader";
 
 function LinkCard({
   href,
@@ -67,72 +60,19 @@ const Page: React.FC = () => {
   const router = useParams();
   const address = router.address as string;
 
-  const w3storage = useW3upClient();
-
   const { score } = useGetGitcoinPassportScore(address);
 
   const { userProfile, isProfileLoading } = useGetUserProfile({ address });
   const { nfts, isNFTLoading } = useGetNfts({ address });
 
-  const {
-    data: hash,
-    error: writeContractErr,
-    writeContractAsync,
-  } = useWriteContract();
+  const isLoading = isProfileLoading || isNFTLoading;
 
-  async function submit(e: React.FormEvent<HTMLFormElement>, player?: any) {
-    e.preventDefault();
-
-    const payload = {
-      links: player.links,
-      external_url: `${META_LINKS_URL}/${address}`,
-      name: player.profile.name,
-      image: player.profile.profileImageURL,
-      description: player.profile.description,
-      address: player.ethereumAddress,
-    };
-
-    const payloadString = JSON.stringify(payload);
-    const blob = new Blob([payloadString], { type: "application/json" });
-
-    const cid = await w3storage?.uploadFile(blob);
-    const ipfsUrl = `ipfs://${cid}`;
-    // const ipfsUrl =
-    //   "ipfs://bafkreid7pqjb7jljrsy7xahod5sabmak5ripcm3dziuyswk7qxsh3ddeym";
-    const coordinationStrategyId =
-      "0x7e0bb5d32b56c645d0ec518278dbdd455ba9cb0aef4b5f5e1b948c3c8cc8bdf6";
-    const commitmentStrategyId =
-      "0x664b14947c4acefa12daff80395d2208043e7b616975fc8f20d23a0204cc2b25";
-    const evaluationStrategyId =
-      "0x90b92fef49f68b1f2508955e08ad8fcb052175afa2289b5883fc6660ce83c4f7";
-    const fundingStrategyId =
-      "0x554cdef72cf81a028dcca12b19667df6bee27e545aa7effb7639a14449b6652a";
-    const payoutStrategyId =
-      "0x28c0b3171d84a169a6516177f2a53929989d6278df8aacb2ad15c5ed6defa847";
-
-    try {
-      const res = await writeContractAsync({
-        address: WERK_NFT_CONTRACT_ADDRESS_SEPOLIA,
-        abi: WERKNFT_ABI,
-        functionName: "mintWorkstream",
-        args: [
-          // address,
-          "0xd3Fb8F20ca2d2a1ecaf3EA04AD37c37f60Ee36dc",
-          ipfsUrl,
-          coordinationStrategyId,
-          commitmentStrategyId,
-          evaluationStrategyId,
-          fundingStrategyId,
-          payoutStrategyId,
-        ],
-      });
-    } catch (err) {
-      console.log("err", err);
-    }
-  }
-
-  if (isProfileLoading) {
-    return <p></p>;
+  if (isLoading) {
+    return (
+      <div className="fixed inset-0 flex justify-center items-center">
+        <ThreeDotsLoader className="w-[80px] h-[46px]" />
+      </div>
+    );
   }
 
   return (
@@ -169,21 +109,18 @@ const Page: React.FC = () => {
               <p className="text-white text-center text-base my-4 max-w-[400px] break-words">
                 {userProfile?.bio ?? ""}
               </p>
-              {/* Mint Button */}
-              {/* <form onSubmit={(e) => submit(e, data?.player[0])}>
-              <button type="submit">Mint</button>
-            </form> */}
+
               <Tabs defaultValue="links" className="w-full">
                 <TabsList className="flex items-center justify-center">
                   <TabsTrigger value="links">Links</TabsTrigger>
                   <TabsTrigger value="nfts">NFTs</TabsTrigger>
-                  {/* <TabsTrigger value="guilds">Guilds</TabsTrigger> */}
+
                   <TabsTrigger value="donate">Donate</TabsTrigger>
                   <TabsTrigger value="attestation">Attestation</TabsTrigger>
                 </TabsList>
                 <TabsContent value="links">
                   <div className="w-full mt-8 flex flex-col items-center justify-center">
-                    {userProfile?.links?.map((link: any, index: number) => (
+                    {userProfile?.links?.map((link: any) => (
                       <LinkCard
                         key={link.name}
                         href={link.url}
@@ -211,20 +148,7 @@ const Page: React.FC = () => {
                     })}
                   </div>
                 </TabsContent>
-                {/* <TabsContent value="guilds">
-                <div className="w-full mt-8 flex flex-col items-center justify-center">
-                  {data?.player[0]?.guilds.map(
-                    ({ Guild: guild }: any, index: number) => (
-                      <LinkCard
-                        key={guild.name}
-                        href={"/"}
-                        title={guild.name}
-                        image={toHTTP(guild.logo)}
-                      />
-                    )
-                  )}
-                </div>
-              </TabsContent> */}
+
                 <TabsContent value="donate">
                   <div className="w-full mt-8 flex items-center justify-center">
                     <DonateCrypto ethereumAddress={address as `0x${string}`} />
