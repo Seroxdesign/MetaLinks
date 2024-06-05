@@ -356,7 +356,7 @@ const Page: React.FC = () => {
                 <TabsList className="flex items-center justify-center">
                   <TabsTrigger value="links">Links</TabsTrigger>
                   <TabsTrigger value="nfts">NFTs</TabsTrigger>
-                  <TabsTrigger value="guilds">Guilds</TabsTrigger>
+                  {/* <TabsTrigger value="guilds">Guilds</TabsTrigger> */}
                   <TabsTrigger value="donate">Donate</TabsTrigger>
                   <TabsTrigger value="attestation">Attestation</TabsTrigger>
                 </TabsList>
@@ -391,7 +391,7 @@ const Page: React.FC = () => {
                     })}
                   </div>
                 </TabsContent>
-                <TabsContent value="guilds">
+                {/* <TabsContent value="guilds">
                   <div className="w-full mt-8 flex flex-col items-center justify-center">
                     {data?.player[0]?.guilds.map(
                       ({ Guild: guild }: any, index: number) => (
@@ -404,7 +404,7 @@ const Page: React.FC = () => {
                       )
                     )}
                   </div>
-                </TabsContent>
+                </TabsContent> */}
                 <TabsContent value="donate">
                   <div className="w-full mt-8 flex items-center justify-center">
                     <DonateCrypto
