@@ -5,6 +5,10 @@ import { useState } from "react";
 import IconSearch from "@/components/IconSearch";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { checkAndReturnAddress } from "@/utils/address";
+import ThreeDotsLoader from "./ThreeDotsLoader";
+import { useForm } from "react-hook-form";
+import { Form, FormField } from "./ui/form";
 
 const SearchProfile = ({
   val,
@@ -13,37 +17,80 @@ const SearchProfile = ({
   val?: string;
   classname?: string;
 }) => {
-  const [searchQuery, setSearchQuery] = useState(val ?? "");
+  const [submitting, setSubmitting] = useState(false);
+  const [userInputError, setUserInputError] = useState("");
   const router = useRouter();
+
+  const form = useForm({
+    defaultValues: {
+      searchQuery: val ?? "",
+    },
+  });
+
+  const searchProfileBtnHandler = async () => {
+    setSubmitting(true);
+    const searchQuery = form.getValues("searchQuery");
+    const address = await checkAndReturnAddress(searchQuery);
+
+    if (address) router.push(`/${address}`);
+    else setUserInputError("Please enter valid ENS or ETH address.");
+    setSubmitting(false);
+  };
 
   return (
     <div
       className={cn(
-        "z-50 flex justify-center items-center gap-2 flex-col md:flex-row w-full",
+        "flex flex-col justify-center items-start gap-1",
         classname
       )}
     >
-      <Input
-        type="text"
-        placeholder="Enter username, name or ETH address"
-        className="rounded-xl w-[85%] md:w-[30rem] h-[2.5rem]"
-        value={searchQuery}
-        onChange={(e) => {
-          setSearchQuery(e.target.value);
-        }}
-      />
-      <Button
-        onClick={() => {
-          router.push(`/search?query=${searchQuery}`);
-        }}
-        variant="shimmer"
-        size="shimmerLg"
-        className="text-sm h-8 md:h-10"
-      >
-        <IconSearch /> Search Profile
-      </Button>
+      <Form {...form}>
+        <form
+          className="z-50 flex justify-center items-center gap-2 md:flex-row w-full"
+          onSubmit={form.handleSubmit(searchProfileBtnHandler)}
+        >
+          <FormField
+            control={form.control}
+            name="searchQuery"
+            render={({ field }) => (
+              <Input
+                type="text"
+                {...field}
+                placeholder="Enter ENS or ETH address"
+                className="rounded-xl w-[85%] md:w-[30rem] h-[2.5rem]"
+                onChange={(e) => {
+                  field.onChange(e.target.value);
+                  setUserInputError("");
+                }}
+              />
+            )}
+          />
+
+          <Button
+            variant="shimmer"
+            size="shimmerLg"
+            type="submit"
+            className="text-sm h-8 w-40 md:h-10"
+            disabled={submitting}
+          >
+            {submitting ? (
+              <ThreeDotsLoader className="w-[40px] h-[16px]" />
+            ) : (
+              <>
+                <IconSearch /> Search Profile
+              </>
+            )}
+          </Button>
+        </form>
+      </Form>
+      <Error message={userInputError} />
     </div>
   );
+};
+
+const Error = ({ message }: { message: string }) => {
+  if (!message) return null;
+  return <p className="text-red-500 text-sm mt-2">{message}</p>;
 };
 
 export default SearchProfile;

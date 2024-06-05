@@ -1,6 +1,18 @@
 export const airStackQuery = /* GraphQL */ `
   query GetProfileInfo($identity: Identity!) {
-    Wallet(input: { identity:  $identity, blockchain: ethereum }) {
+    Domains(
+      input: { filter: { owner: { _eq: $identity } }, blockchain: ethereum }
+    ) {
+      Domain {
+        tokenAddress
+        tokenId
+        avatar
+        dappName
+        dappSlug
+        name
+      }
+    }
+    Wallet(input: { identity: $identity, blockchain: ethereum }) {
       addresses
       primaryDomain {
         name
@@ -38,30 +50,29 @@ export const airStackQuery = /* GraphQL */ `
         limit: 50
       }
     ) {
-        TokenBalance {
-          tokenAddress
-          amount
-          formattedAmount
-          tokenType
-          tokenNfts {
-            address
-            tokenId
-            blockchain
-            contentValue {
-              image {
-                original
-              }
+      TokenBalance {
+        tokenAddress
+        amount
+        formattedAmount
+        tokenType
+        tokenNfts {
+          address
+          tokenId
+          blockchain
+          contentValue {
+            image {
+              original
             }
           }
         }
-        pageInfo {
-          nextCursor
-          prevCursor
-          hasNextPage
-          hasPrevPage
-        }
+      }
+      pageInfo {
+        nextCursor
+        prevCursor
+        hasNextPage
+        hasPrevPage
+      }
     }
-
 
     farcasterSocials: Socials(
       input: {
@@ -71,6 +82,9 @@ export const airStackQuery = /* GraphQL */ `
       }
     ) {
       Social {
+        twitterUserName
+        profileUrl
+        website
         isDefault
         blockchain
         dappName
@@ -102,6 +116,9 @@ export const airStackQuery = /* GraphQL */ `
       }
     ) {
       Social {
+        twitterUserName
+        profileUrl
+        website
         isDefault
         blockchain
         dappName
@@ -128,77 +145,197 @@ export const airStackQuery = /* GraphQL */ `
   }
 `;
 
-export const GET_NFTS_QUERY = /* GraphQL */ `
-query GetNFTs($Identity: [Identity!]) {
-  ethereum: TokenBalances(
-    input: {
-      filter: {
-        owner: { _in: $Identity }
-        tokenType: { _in: [ERC1155, ERC721] }
-      }
-      blockchain: ethereum
-      limit: 50
-    }
-  ) {
-    TokenBalance {
-      tokenAddress
-      amount
-      formattedAmount
-      tokenType
-      token {
-        isSpam
-        name
-      }
-      tokenNfts {
-        address
-        tokenId
-        blockchain
-        contentValue {
-          image {
-            original
-          }
-        }
-      }
-    }
-    pageInfo {
-      nextCursor
-      prevCursor
-      hasNextPage
-      hasPrevPage
-    }
-  }
-  base: TokenBalances(
-    input: {
-      filter: {
-        owner: { _in: $Identity }
-        tokenType: { _in: [ERC1155, ERC721] }
-      }
-      blockchain: base
-      limit: 50
-    }
-  ) {
-    TokenBalance {
-      tokenAddress
-      amount
-      formattedAmount
-      tokenType
-      tokenNfts {
-        address
-        tokenId
-        blockchain
-        contentValue {
-          image {
-            original
-          }
-        }
-      }
-    }
-    pageInfo {
-      nextCursor
-      prevCursor
-      hasNextPage
-      hasPrevPage
-    }
-  }
+// Define types for the query response
+export interface AirStackQueryResponse {
+  Domains: {
+    Domain: Array<{
+      tokenAddress: string;
+      tokenId: string;
+      avatar: string;
+      dappName: string;
+      dappSlug: string;
+      name: string;
+    }>;
+  };
+  Wallet: {
+    addresses: string[];
+    primaryDomain: {
+      name: string;
+      avatar: string;
+      tokenNft: {
+        contentValue: {
+          image: {
+            small: string;
+          };
+        };
+      };
+    } | null;
+    domains: Array<{
+      name: string;
+      avatar: string;
+      tokenNft: {
+        contentValue: {
+          image: {
+            small: string;
+          };
+        };
+      };
+    }>;
+    xmtp: {
+      isXMTPEnabled: boolean;
+    };
+  };
+  TokenBalances: {
+    TokenBalance: Array<{
+      tokenAddress: string;
+      amount: string;
+      formattedAmount: string;
+      tokenType: string;
+      tokenNfts: Array<{
+        address: string;
+        tokenId: string;
+        blockchain: string;
+        contentValue: {
+          image: {
+            original: string;
+          };
+        };
+      }>;
+    }>;
+    pageInfo: {
+      nextCursor: string | null;
+      prevCursor: string | null;
+      hasNextPage: boolean;
+      hasPrevPage: boolean;
+    };
+  };
+  farcasterSocials: {
+    Social: Array<{
+      isDefault: boolean;
+      blockchain: string;
+      dappName: string;
+      profileName: string;
+      profileDisplayName: string;
+      profileHandle: string;
+      profileImage: string;
+      profileBio: string;
+      followerCount: number;
+      followingCount: number;
+      profileTokenId: string;
+      profileTokenAddress: string;
+      profileCreatedAtBlockTimestamp: string;
+      twitterUserName: string;
+      website: string;
+      profileImageContentValue: {
+        image: {
+          small: string;
+        };
+      };
+      socialCapital: {
+        socialCapitalScore: number;
+      };
+    }>;
+  };
+  lensSocials: {
+    Social: Array<{
+      isDefault: boolean;
+      blockchain: string;
+      dappName: string;
+      profileName: string;
+      profileDisplayName: string;
+      profileHandle: string;
+      profileImage: string;
+      profileBio: string;
+      followerCount: number;
+      followingCount: number;
+      profileTokenId: string;
+      profileTokenAddress: string;
+      profileCreatedAtBlockTimestamp: string;
+      twitterUserName: string;
+      website: string;
+      profileImageContentValue: {
+        image: {
+          small: string;
+        };
+      };
+      socialCapital: {
+        socialCapitalScore: number;
+      };
+    }>;
+  };
 }
+
+export const GET_NFTS_QUERY = /* GraphQL */ `
+  query GetNFTs($Identity: [Identity!]) {
+    ethereum: TokenBalances(
+      input: {
+        filter: {
+          owner: { _in: $Identity }
+          tokenType: { _in: [ERC1155, ERC721] }
+        }
+        blockchain: ethereum
+        limit: 50
+      }
+    ) {
+      TokenBalance {
+        tokenAddress
+        amount
+        formattedAmount
+        tokenType
+        token {
+          isSpam
+          name
+        }
+        tokenNfts {
+          address
+          tokenId
+          blockchain
+          contentValue {
+            image {
+              original
+            }
+          }
+        }
+      }
+      pageInfo {
+        nextCursor
+        prevCursor
+        hasNextPage
+        hasPrevPage
+      }
+    }
+    base: TokenBalances(
+      input: {
+        filter: {
+          owner: { _in: $Identity }
+          tokenType: { _in: [ERC1155, ERC721] }
+        }
+        blockchain: base
+        limit: 50
+      }
+    ) {
+      TokenBalance {
+        tokenAddress
+        amount
+        formattedAmount
+        tokenType
+        tokenNfts {
+          address
+          tokenId
+          blockchain
+          contentValue {
+            image {
+              original
+            }
+          }
+        }
+      }
+      pageInfo {
+        nextCursor
+        prevCursor
+        hasNextPage
+        hasPrevPage
+      }
+    }
+  }
 `;

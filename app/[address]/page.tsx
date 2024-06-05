@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 
 import { toHTTP } from "@/utils/ipfs";
 import { useParams } from "next/navigation";
@@ -11,21 +11,20 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import DonateCrypto from "@/components/DonateCrypto";
 import { ConnectKitButton } from "connectkit";
 import MainDrawer from "@/components/MoreOptionsDropdown";
-import { useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+import { useWriteContract } from "wagmi";
 import {
   WERK_NFT_CONTRACT_ADDRESS_SEPOLIA,
   META_LINKS_URL,
 } from "@/lib/constants";
-import type { GetNfTsQuery, GetNfTsQueryVariables } from "@/graphql/types";
 
 import { WERKNFT_ABI } from "@/lib/WerkNFT";
 import { useW3upClient } from "@/lib/useW3upClient";
 
-import { useSupabase } from "@/app/providers/supabase";
-import { Database } from "@/types/supabase";
-import { useQuery } from "@airstack/airstack-react";
-import { GET_NFTS_QUERY } from "@/services/airstack";
 import { Attestations } from "@/components/Attestations";
+import { useGetGitcoinPassportScore } from "@/lib/hooks/useGetGitcoinPassportScore";
+import { useGetUserProfile } from "@/lib/hooks/useGetUserProfile";
+import { useGetNfts } from "@/lib/hooks/useGetNfts";
+import { BackgroundBeams } from "@/components/background-beams";
 
 function LinkCard({
   href,
@@ -63,91 +62,23 @@ function LinkCard({
   );
 }
 
-interface NFT {
-  image: string;
-  address: string;
-}
-
 const Page: React.FC = () => {
   // Get the address from the router params
   const router = useParams();
-  const w3storage = useW3upClient();
-  const [nfts, setNfts] = useState<NFT[]>([]);
-  const [isProfileLoading, setIsProfileLoading] = useState(false);
-
   const address = router.address as string;
-  const {
-    data: nftData,
-    loading: isNFTLoading,
-    error,
-  } = useQuery<GetNfTsQuery, GetNfTsQueryVariables>(GET_NFTS_QUERY, {
-    Identity: [address],
-  });
 
-  const [userProfile, setUserProfile] = useState<
-    null | Database["public"]["Tables"]["users"]["Row"]
-  >(null);
+  const w3storage = useW3upClient();
 
-  const { supabase } = useSupabase();
+  const { score } = useGetGitcoinPassportScore(address);
 
-  useEffect(() => {
-    if (nftData && !isNFTLoading) {
-      const baseNfts =
-        nftData?.base?.TokenBalance?.map((tokenBalance) => {
-          return {
-            image: tokenBalance.tokenNfts?.contentValue?.image?.original,
-            address: tokenBalance?.tokenNfts?.address,
-          };
-        }) ?? [];
-
-      const ethereumNfts =
-        nftData?.ethereum?.TokenBalance?.map((tokenBalance) => {
-          return {
-            image: tokenBalance.tokenNfts?.contentValue?.image?.original,
-            address: tokenBalance?.tokenNfts?.address,
-          };
-        }) ?? [];
-
-      const allNfts = baseNfts
-        .concat(ethereumNfts)
-        .filter((nft): nft is NFT => !!nft.image && !!nft.address);
-
-      setNfts(allNfts);
-    }
-  }, [nftData]);
-
-  useEffect(() => {
-    getUserProfile();
-  }, [address]);
-
-  const getUserProfile = async () => {
-    try {
-      setIsProfileLoading(true);
-      if (address) {
-        const { data } = await supabase
-          .from("users")
-          .select()
-          .eq("address", address)
-          .single();
-        setUserProfile(data);
-      }
-    } catch (err) {
-      console.log("something went wrong", err);
-    } finally {
-      setIsProfileLoading(false);
-    }
-  };
+  const { userProfile, isProfileLoading } = useGetUserProfile({ address });
+  const { nfts, isNFTLoading } = useGetNfts({ address });
 
   const {
     data: hash,
     error: writeContractErr,
     writeContractAsync,
   } = useWriteContract();
-
-  const { isLoading: isConfirming, isSuccess: isConfirmed } =
-    useWaitForTransactionReceipt({
-      hash,
-    });
 
   async function submit(e: React.FormEvent<HTMLFormElement>, player?: any) {
     e.preventDefault();
@@ -195,7 +126,6 @@ const Page: React.FC = () => {
           payoutStrategyId,
         ],
       });
-      console.log("res", res);
     } catch (err) {
       console.log("err", err);
     }
@@ -205,88 +135,83 @@ const Page: React.FC = () => {
     return <p></p>;
   }
 
-  if (!userProfile) {
-    return <p>Error: User not found</p>;
-  }
-
   return (
-    <main className="relative top-0 left-0">
-      <Image
-        alt="background-image"
-        src="/Banner.svg"
-        height="380"
-        width="2000"
-        style={{ zIndex: -2 }}
-        className="absolute top-0 left-0 object-cover md:h-96 min-h-48 w-full"
-      />
-      <div className="fixed flex gap-x-4 items-center top-3 right-3 z-10">
-        <MainDrawer username={userProfile?.username} />
-        <ConnectKitButton />
-      </div>
-      <Wrapper>
-        <FadeIn>
-          <div className="flex items-center flex-col mx-auto w-full justify-center px-2 md:px-8">
-            <div className="h-40 w-40 mt-16 md:mt-32 md:h-72 md:w-72">
-              <img
-                className="rounded-full h-40 w-40 md:h-72 md:w-72 border border-[12px] border-[rgba(255,255,255,0.04)]"
-                alt="Picture of the author"
-                src={toHTTP(userProfile.profileImageIPFS ?? "")}
-                width={288}
-                height={288}
-              />
-            </div>
-            <h1 className="font-bold mt-4 text-2xl text-white">
-              {userProfile?.name ?? ""}
-            </h1>
-            <h3 className="text-base text-white">
-              @{userProfile?.username ?? ""}
-            </h3>
-            <p className="text-white text-center text-base my-8">
-              {userProfile?.bio ?? ""}
-            </p>
-            {/* Mint Button */}
-            {/* <form onSubmit={(e) => submit(e, data?.player[0])}>
+    <>
+      <main className="relative top-0 left-0 z-10">
+        <div className="fixed flex gap-x-4 items-center top-3 right-3 z-10">
+          <MainDrawer username={userProfile?.username} />
+          <ConnectKitButton />
+        </div>
+        <Wrapper>
+          <FadeIn>
+            <div className="flex items-center flex-col mx-auto w-full justify-center px-2 md:px-8">
+              <div className="h-40 w-40 mt-16 md:mt-32 md:h-72 md:w-72">
+                <img
+                  className="rounded-full h-40 w-40 md:h-72 md:w-72 border border-[12px] border-[rgba(255,255,255,0.04)]"
+                  alt="Picture of the author"
+                  src={toHTTP(userProfile?.profileImageIPFS ?? "")}
+                  width={288}
+                  height={288}
+                />
+              </div>
+              <h1 className="font-bold mt-4 text-2xl text-white">
+                {userProfile?.name ?? ""}
+              </h1>
+              <h3 className="text-base text-white">
+                @{userProfile?.username ?? ""}
+              </h3>
+              <div className="flex flex-col items-center mt-4">
+                <h1 className="text-xl font-light text-[#662DDF]">
+                  {score ?? "0"}
+                </h1>
+                <p className="text-[10px]">Gitcoin Passport Score</p>
+              </div>
+              <p className="text-white text-center text-base my-4 max-w-[400px] break-words">
+                {userProfile?.bio ?? ""}
+              </p>
+              {/* Mint Button */}
+              {/* <form onSubmit={(e) => submit(e, data?.player[0])}>
               <button type="submit">Mint</button>
             </form> */}
-            <Tabs defaultValue="links" className="w-full">
-              <TabsList className="flex items-center justify-center">
-                <TabsTrigger value="links">Links</TabsTrigger>
-                <TabsTrigger value="nfts">NFTs</TabsTrigger>
-                {/* <TabsTrigger value="guilds">Guilds</TabsTrigger> */}
-                <TabsTrigger value="donate">Donate</TabsTrigger>
-                <TabsTrigger value="attestation">Attestation</TabsTrigger>
-              </TabsList>
-              <TabsContent value="links">
-                <div className="w-full mt-8 flex flex-col items-center justify-center">
-                  {userProfile?.links?.map((link: any, index: number) => (
-                    <LinkCard
-                      key={link.name}
-                      href={link.url}
-                      title={link.name}
-                      image="/LinkDefaultIcon.svg"
-                    />
-                  ))}
-                </div>
-              </TabsContent>
-              <TabsContent value="nfts">
-                <div className="grid md:grid-cols-3 grid-cols-2 gap-3 max-w-96 place-self-center mx-auto mt-8">
-                  {isNFTLoading && <p>Loading...</p>}
-                  {!isNFTLoading && nfts.length === 0 && <p>No NFTs Found</p>}
-                  {nfts.map((nft: { image: string; address: string }) => {
-                    return (
-                      <Image
-                        key={nft.image}
-                        src={nft.image}
-                        alt="nft-item"
-                        className="h-auto w-full max-w-full rounded-md min-h-32"
-                        width={128}
-                        height={128}
+              <Tabs defaultValue="links" className="w-full">
+                <TabsList className="flex items-center justify-center">
+                  <TabsTrigger value="links">Links</TabsTrigger>
+                  <TabsTrigger value="nfts">NFTs</TabsTrigger>
+                  {/* <TabsTrigger value="guilds">Guilds</TabsTrigger> */}
+                  <TabsTrigger value="donate">Donate</TabsTrigger>
+                  <TabsTrigger value="attestation">Attestation</TabsTrigger>
+                </TabsList>
+                <TabsContent value="links">
+                  <div className="w-full mt-8 flex flex-col items-center justify-center">
+                    {userProfile?.links?.map((link: any, index: number) => (
+                      <LinkCard
+                        key={link.name}
+                        href={link.url}
+                        title={link.name}
+                        image="/LinkDefaultIcon.svg"
                       />
-                    );
-                  })}
-                </div>
-              </TabsContent>
-              {/* <TabsContent value="guilds">
+                    ))}
+                  </div>
+                </TabsContent>
+                <TabsContent value="nfts">
+                  <div className="grid md:grid-cols-3 grid-cols-2 gap-3 max-w-96 place-self-center mx-auto mt-8">
+                    {isNFTLoading && <p>Loading...</p>}
+                    {!isNFTLoading && nfts.length === 0 && <p>No NFTs Found</p>}
+                    {nfts.map((nft: { image: string; address: string }) => {
+                      return (
+                        <Image
+                          key={nft.image}
+                          src={nft.image}
+                          alt="nft-item"
+                          className="h-auto w-full max-w-full rounded-md min-h-32"
+                          width={128}
+                          height={128}
+                        />
+                      );
+                    })}
+                  </div>
+                </TabsContent>
+                {/* <TabsContent value="guilds">
                 <div className="w-full mt-8 flex flex-col items-center justify-center">
                   {data?.player[0]?.guilds.map(
                     ({ Guild: guild }: any, index: number) => (
@@ -300,19 +225,21 @@ const Page: React.FC = () => {
                   )}
                 </div>
               </TabsContent> */}
-              <TabsContent value="donate">
-                <div className="w-full mt-8 flex items-center justify-center">
-                  <DonateCrypto ethereumAddress={address as `0x${string}`} />
-                </div>
-              </TabsContent>
-              <TabsContent value="attestation">
-                <Attestations address={address} />
-              </TabsContent>
-            </Tabs>
-          </div>
-        </FadeIn>
-      </Wrapper>
-    </main>
+                <TabsContent value="donate">
+                  <div className="w-full mt-8 flex items-center justify-center">
+                    <DonateCrypto ethereumAddress={address as `0x${string}`} />
+                  </div>
+                </TabsContent>
+                <TabsContent value="attestation">
+                  <Attestations address={address} />
+                </TabsContent>
+              </Tabs>
+            </div>
+          </FadeIn>
+        </Wrapper>
+      </main>
+      <BackgroundBeams />
+    </>
   );
 };
 
