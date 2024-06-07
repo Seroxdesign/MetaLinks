@@ -28,15 +28,10 @@ export async function POST(request: Request) {
   console.log("signerAddress", signerAddress);
 
   if (signerAddress.toLowerCase() !== address.toLowerCase()) {
-    return new Response(
-      JSON.stringify({
-        message: "The message was NOT signed by the expected address",
-      }),
+    return Response.json(
+      { message: "The message was NOT signed by the expected address" },
       {
         status: 400,
-        headers: {
-          "Content-Type": "application/json",
-        },
       }
     );
   }
@@ -47,22 +42,16 @@ export async function POST(request: Request) {
     .eq("address", address)
     .single();
 
-  if (
-    data?.auth &&
-    typeof data.auth === "object" &&
-    "genNonce" in data.auth &&
-    data?.auth?.genNonce !== nonce
-  ) {
-    return new Response(
-      JSON.stringify({ message: "The nonce does not match." }),
+  if (data?.auth && typeof data.auth === "object" && "genNonce" in data.auth && data?.auth?.genNonce !== nonce) {
+    return Response.json(
+      { message: "The nonce does not match." },
       {
         status: 400,
-        headers: {
-          "Content-Type": "application/json",
-        },
       }
     );
   }
+
+  // console.log("data", data);
 
   let authUser;
   if (!data?.id) {
@@ -72,26 +61,28 @@ export async function POST(request: Request) {
     });
     if (error) {
       console.log("error creating user", error.status, error.message);
-      return new Response(JSON.stringify({ error: error.message }), {
-        status: 500,
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      return Response.json(
+        { error: error.message },
+        {
+          status: 500,
+        }
+      );
     }
     authUser = userData.user;
   } else {
     const { data: userData, error } = await supabase.auth.admin.getUserById(
       data.id
     );
+    // console.log("userData", userData, error);
+
     if (error) {
       console.log("error getting user", error.status, error.message);
-      return new Response(JSON.stringify({ error }), {
-        status: 500,
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      return Response.json(
+        { error },
+        {
+          status: 500,
+        }
+      );
     }
     authUser = userData.user;
   }
@@ -125,10 +116,10 @@ export async function POST(request: Request) {
     { expiresIn: 60 * 2 }
   );
 
-  return new Response(JSON.stringify({ token }), {
-    status: 200,
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
+  return Response.json(
+    { token },
+    {
+      status: 200,
+    }
+  );
 }
