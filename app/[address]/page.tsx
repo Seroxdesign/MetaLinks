@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-
 import { toHTTP } from "@/utils/ipfs";
 import { useParams } from "next/navigation";
 import Wrapper from "@/components/Wrapper";
@@ -11,7 +10,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import DonateCrypto from "@/components/DonateCrypto";
 import { ConnectKitButton } from "connectkit";
 import MainDrawer from "@/components/MoreOptionsDropdown";
-
 import { Attestations } from "@/components/Attestations";
 import { useGetGitcoinPassportScore } from "@/lib/hooks/useGetGitcoinPassportScore";
 import { useGetUserProfile } from "@/lib/hooks/useGetUserProfile";
@@ -19,15 +17,13 @@ import { useGetNfts } from "@/lib/hooks/useGetNfts";
 import { BackgroundBeams } from "@/components/background-beams";
 import ThreeDotsLoader from "@/components/ThreeDotsLoader";
 
-function LinkCard({
-  href,
-  title,
-  image,
-}: {
+interface LinkCardProps {
   href: string;
   title: string;
   image?: string;
-}) {
+}
+
+function LinkCard({ href, title, image }: LinkCardProps) {
   return (
     <a
       href={href}
@@ -58,7 +54,7 @@ function LinkCard({
 const Page: React.FC = () => {
   // Get the address from the router params
   const router = useParams();
-  const address = router.address as string;
+  const address = router?.address as string;
 
   const { score } = useGetGitcoinPassportScore(address);
 
@@ -114,7 +110,6 @@ const Page: React.FC = () => {
                 <TabsList className="flex items-center justify-center">
                   <TabsTrigger value="links">Links</TabsTrigger>
                   <TabsTrigger value="nfts">NFTs</TabsTrigger>
-
                   <TabsTrigger value="donate">Donate</TabsTrigger>
                   <TabsTrigger value="attestation">Attestation</TabsTrigger>
                 </TabsList>
@@ -148,7 +143,6 @@ const Page: React.FC = () => {
                     })}
                   </div>
                 </TabsContent>
-
                 <TabsContent value="donate">
                   <div className="w-full mt-8 flex items-center justify-center">
                     <DonateCrypto ethereumAddress={address as `0x${string}`} />
