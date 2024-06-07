@@ -1,13 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  webpack: (config, context) => {
-    if (config.plugins) {
-      config.plugins.push(
-        new context.webpack.IgnorePlugin({
-          resourceRegExp: /^(pino-pretty)$/,
-        })
-      );
-    }
+  webpack: (config) => {
+    config.externals.push("pino-pretty", "lokijs", "encoding");
     return config;
   },
   images: {
