@@ -24,12 +24,12 @@ export async function GET(req: Request) {
   const owner = searchParams.get("owner");
 
   if (!owner) {
-    return Response.json(
-      { error: `Missing Owner Address` },
-      {
-        status: 400,
-      }
-    );
+    return new Response(JSON.stringify({ error: `Missing Owner Address` }), {
+      status: 400,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
   }
 
   if (isAddress(owner as string)) {
@@ -46,30 +46,31 @@ export async function GET(req: Request) {
         .forNetwork(Network.OPT_MAINNET)
         .nft.getNftsForOwner(owner as string, { pageSize: 5 });
 
-      return Response.json({ mainnetNfts, maticNfts, optimismNfts });
+      return new Response(
+        JSON.stringify({ mainnetNfts, maticNfts, optimismNfts }),
+        {
+          status: 200,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
     } catch (err) {
       const status = 500;
       const msg = (err as Error).message;
-      return Response.json(
-        { error: msg },
-        {
-          status,
-        }
-      );
+      return new Response(JSON.stringify({ error: msg }), {
+        status,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
     }
-  } else if (!isAddress(owner as string)) {
-    return Response.json(
-      { error: `Invalid Owner Address` },
-      {
-        status: 400,
-      }
-    );
   } else {
-    return Response.json(
-      { error: `Incorrect Method: ${req.method} (GET Supported)` },
-      {
-        status: 405,
-      }
-    );
+    return new Response(JSON.stringify({ error: `Invalid Owner Address` }), {
+      status: 400,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
   }
 }

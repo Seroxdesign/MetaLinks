@@ -43,10 +43,10 @@ export async function POST(request: Request) {
     console.log("res", res);
   }
 
-  return Response.json(
-    { nonce },
-    {
-      status: 200,
-    }
-  );
+  return new Response(JSON.stringify({ nonce }), {
+    status: 200,
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
 }
