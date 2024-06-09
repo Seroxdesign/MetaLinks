@@ -75,7 +75,7 @@ const Page: React.FC = () => {
     <>
       <main className="relative top-0 left-0 z-10">
         <div className="fixed flex gap-x-4 items-center top-3 right-3 z-10">
-          <MainDrawer username={userProfile?.username} />
+          <MainDrawer address={address} />
           <ConnectKitButton />
         </div>
         <Wrapper>
