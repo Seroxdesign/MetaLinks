@@ -31,7 +31,7 @@ type GetNfTsQueryVariables = {
   Identity: string[];
 };
 
-export const useGetNfts = ({ address }: { address: string }) => {
+export const useGetNfts = ({ address }: { address: string | null }) => {
   const [nfts, setNfts] = useState<NFT[]>([]);
 
   const {
@@ -39,7 +39,7 @@ export const useGetNfts = ({ address }: { address: string }) => {
     loading: isNFTLoading,
     error,
   } = useQuery<GetNfTsQuery, GetNfTsQueryVariables>(GET_NFTS_QUERY, {
-    Identity: [address],
+    Identity: [address ?? ""],
   });
 
   useEffect(() => {

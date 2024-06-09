@@ -16,6 +16,7 @@ import { useGetUserProfile } from "@/lib/hooks/useGetUserProfile";
 import { useGetNfts } from "@/lib/hooks/useGetNfts";
 import { BackgroundBeams } from "@/components/background-beams";
 import ThreeDotsLoader from "@/components/ThreeDotsLoader";
+import { useAccount } from "wagmi";
 
 interface LinkCardProps {
   href: string;
@@ -55,6 +56,8 @@ const Page: React.FC = () => {
   // Get the address from the router params
   const router = useParams();
   const address = router?.address as string;
+  const { address: userConnectAddress, chainId } = useAccount();
+  const enableProfileEditing = userConnectAddress === address;
 
   const { score } = useGetGitcoinPassportScore(address);
 
@@ -75,7 +78,10 @@ const Page: React.FC = () => {
     <>
       <main className="relative top-0 left-0 z-10">
         <div className="fixed flex gap-x-4 items-center top-3 right-3 z-10">
-          <MainDrawer address={address} />
+          <MainDrawer
+            address={address}
+            enableProfileEditing={enableProfileEditing}
+          />
           <ConnectKitButton />
         </div>
         <Wrapper>

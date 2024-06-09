@@ -1,12 +1,15 @@
 "use client";
 
 import ProfileCreationForm from "@/components/ProfileCreationForm/ProfileCreationForm";
+import { useParams } from "next/navigation";
 import { Suspense } from "react";
 
 const EditProfileCreationComponent = () => {
+  // const router = useParams();
+  // const address = router?.address as string;
   return (
     <main className="mt-16">
-      <ProfileCreationForm />
+      <ProfileCreationForm enableEditing={true} />
     </main>
   );
 };

@@ -14,10 +14,11 @@ interface UserProfile {
   profileImageIPFS: string | null;
   name: string | null;
   bio: string | null;
+  backgroundImageIPFS?: string | null;
   links: { name: string; url: string }[];
 }
 interface UseUserProfileProps {
-  address: string;
+  address: string | null;
 }
 
 interface UseUserProfileReturn {

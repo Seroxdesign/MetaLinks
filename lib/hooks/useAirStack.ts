@@ -17,7 +17,7 @@ interface Error {
 }
 
 type TAirStackQuery = {
-  identity: string;
+  identity: string | null;
 };
 
 /**
@@ -49,11 +49,11 @@ export const useAirStack = ({ identity }: TAirStackQuery) => {
  */
 export const useAirStackWithManualTrigger = ({ identity }: TAirStackQuery) => {
   const [fetch, { data, loading, error }] = useLazyQuery(
-    airStackQuery,
+    identity ? airStackQuery : "",
     { identity: identity },
     { cache: true }
   );
-  console.log("identity:", identity);
+
   const fetchData = () => {
     fetch();
   };

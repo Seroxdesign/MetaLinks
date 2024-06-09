@@ -52,9 +52,11 @@ export function useCopy() {
 function MoreOptionsDropdownMenu({
   username,
   address,
+  enableProfileEditing = true,
 }: {
   username?: string | null;
   address?: string | null;
+  enableProfileEditing?: boolean;
 }) {
   const router = useRouter();
 
@@ -84,17 +86,21 @@ function MoreOptionsDropdownMenu({
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem
-            onClick={() => {
-              router.push(address ? `/${address}/edit-profile` : `/${address}`);
-            }}
-            className="cursor-pointer"
-          >
-            Edit Profile
-            <DropdownMenuShortcut>
-              <Pencil1Icon />
-            </DropdownMenuShortcut>
-          </DropdownMenuItem>
+          {enableProfileEditing && (
+            <DropdownMenuItem
+              onClick={() => {
+                router.push(
+                  address ? `/${address}/edit-profile` : `/${address}`
+                );
+              }}
+              className="cursor-pointer"
+            >
+              Edit Profile
+              <DropdownMenuShortcut>
+                <Pencil1Icon />
+              </DropdownMenuShortcut>
+            </DropdownMenuItem>
+          )}
           <DropdownMenuItem
             onClick={() => {
               router.push("https://enter.metagame.wtf/");
