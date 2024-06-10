@@ -43,7 +43,8 @@ export async function GET(req: Request, res: NextApiResponse) {
         .forNetwork(Network.OPT_MAINNET)
         .nft.getNftsForOwner(owner as string, { pageSize: 5 });
 
-      return Response.json({ mainnetNfts, maticNfts, optimismNfts });
+      // return Response.json({ mainnetNfts, maticNfts, optimismNfts });
+      return res.status(200).json({ mainnetNfts, maticNfts, optimismNfts });
     } catch (err) {
       const status = 500;
       const msg = (err as Error).message;
