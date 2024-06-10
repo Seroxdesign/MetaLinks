@@ -62,7 +62,7 @@ type TuploadImagesInput = {
 
 const ProfileCreationForm = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const { isConnected, handleConnectWallet } = useConnectWallet();
+  // const { isConnected, handleConnectWallet } = useConnectWallet();
   const { address, chainId } = useAccount();
   const { toast } = useToast();
   const router = useRouter();
