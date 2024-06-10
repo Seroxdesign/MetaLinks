@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import { ethers } from "ethers";
 import type { Database } from "@/types/supabase";
 import { z } from "zod";
-import { NextApiResponse } from "next";
+import { NextRequest, NextResponse } from "next/server";
 
 const SUPABASE_TABLE_USERS = "users";
 
@@ -18,7 +18,7 @@ const reqBody = z.object({
   nonce: z.number(),
 });
 
-export async function POST(request: Request, res: NextApiResponse) {
+export async function POST(request: NextRequest) {
   const req = await request.json();
   const { signedMessage, address, nonce } = reqBody.parse(req);
   console.log("address.address", address, signedMessage);
@@ -29,15 +29,12 @@ export async function POST(request: Request, res: NextApiResponse) {
   console.log("signerAddress", signerAddress);
 
   if (signerAddress.toLowerCase() !== address.toLowerCase()) {
-    return res
-      .status(400)
-      .json({ message: "The message was NOT signed by the expected address" });
-    // return Response.json(
-    //   { message: "The message was NOT signed by the expected address" },
-    //   {
-    //     status: 400,
-    //   }
-    // );
+    return NextResponse.json(
+      { message: "The message was NOT signed by the expected address" },
+      {
+        status: 400,
+      }
+    );
   }
 
   const { data } = await supabase
@@ -52,13 +49,12 @@ export async function POST(request: Request, res: NextApiResponse) {
     "genNonce" in data.auth &&
     data?.auth?.genNonce !== nonce
   ) {
-    return res.status(400).json({ message: "The nonce does not match." });
-    // return Response.json(
-    //   { message: "The nonce does not match." },
-    //   {
-    //     status: 400,
-    //   }
-    // );
+    return NextResponse.json(
+      { message: "The nonce does not match." },
+      {
+        status: 400,
+      }
+    );
   }
 
   // console.log("data", data);
@@ -71,13 +67,13 @@ export async function POST(request: Request, res: NextApiResponse) {
     });
     if (error) {
       console.log("error creating user", error.status, error.message);
-      return res.status(500).json({ error });
-      // return Response.json(
-      //   { error: error.message },
-      //   {
-      //     status: 500,
-      //   }
-      // );
+
+      return NextResponse.json(
+        { error: error.message },
+        {
+          status: 500,
+        }
+      );
     }
     authUser = userData.user;
   } else {
@@ -88,13 +84,13 @@ export async function POST(request: Request, res: NextApiResponse) {
 
     if (error) {
       console.log("error getting user", error.status, error.message);
-      return res.status(500).json({ error });
-      // return Response.json(
-      //   { error },
-      //   {
-      //     status: 500,
-      //   }
-      // );
+
+      return NextResponse.json(
+        { error },
+        {
+          status: 500,
+        }
+      );
     }
     authUser = userData.user;
   }
@@ -128,11 +124,10 @@ export async function POST(request: Request, res: NextApiResponse) {
     { expiresIn: 60 * 2 }
   );
 
-  return res.status(200).json({ token });
-  // return Response.json(
-  //   { token },
-  //   {
-  //     status: 200,
-  //   }
-  // );
+  return NextResponse.json(
+    { token },
+    {
+      status: 200,
+    }
+  );
 }

@@ -2,9 +2,9 @@ import { createClient } from "@supabase/supabase-js";
 
 const SUPABASE_TABLE_USER = "users";
 import type { Database } from "@/types/supabase";
-import { NextApiResponse } from "next";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function POST(request: Request, res: NextApiResponse) {
+export async function POST(request: NextRequest) {
   const req = await request.json();
   const { address } = req;
   const nonce = Math.floor(Math.random() * 1000000);
@@ -44,11 +44,10 @@ export async function POST(request: Request, res: NextApiResponse) {
     console.log("res", res);
   }
 
-  return res.status(200).json({ nonce });
-  // return Response.json(
-  //   { nonce },
-  //   {
-  //     status: 200,
-  //   }
-  // );
+  return NextResponse.json(
+    { nonce },
+    {
+      status: 200,
+    }
+  );
 }

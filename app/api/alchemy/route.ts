@@ -2,7 +2,7 @@ import { isAddress } from "@ethersproject/address";
 import { Alchemy, Network } from "alchemy-sdk";
 
 import { AlchemyMultichainClient } from "@/lib/alchemy-multichain-client";
-import { NextApiResponse } from "next";
+import { NextResponse, NextRequest } from "next/server";
 
 const config = {
   apiKey: process.env.NEXT_PUBLIC_ALCHEMY_MAINNET,
@@ -20,13 +20,15 @@ const overrides = {
 
 const alchemy = new AlchemyMultichainClient(config, overrides);
 
-export async function GET(req: Request, res: NextApiResponse) {
+export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const owner = searchParams.get("owner");
 
   if (!owner) {
-    return res.status(400).json({ error: `Missing Owner Address` });
-    // return Response.json({ error: `Missing Owner Address` }, { status: 400 });
+    return NextResponse.json(
+      { error: `Missing Owner Address` },
+      { status: 400 }
+    );
   }
 
   if (isAddress(owner as string)) {
@@ -43,36 +45,31 @@ export async function GET(req: Request, res: NextApiResponse) {
         .forNetwork(Network.OPT_MAINNET)
         .nft.getNftsForOwner(owner as string, { pageSize: 5 });
 
-      // return Response.json({ mainnetNfts, maticNfts, optimismNfts });
-      return res.status(200).json({ mainnetNfts, maticNfts, optimismNfts });
+      return NextResponse.json({ mainnetNfts, maticNfts, optimismNfts });
     } catch (err) {
       const status = 500;
       const msg = (err as Error).message;
-      return res.status(status).json({ error: msg });
-      // return Response.json(
-      //   { error: msg },
-      //   {
-      //     status,
-      //   }
-      // );
+
+      return NextResponse.json(
+        { error: msg },
+        {
+          status,
+        }
+      );
     }
   } else if (!isAddress(owner as string)) {
-    return res.status(400).json({ error: "Invalid Owner Address" });
-    // return Response.json(
-    //   { error: `Invalid Owner Address` },
-    //   {
-    //     status: 400,
-    //   }
-    // );
+    return NextResponse.json(
+      { error: `Invalid Owner Address` },
+      {
+        status: 400,
+      }
+    );
   } else {
-    return res
-      .status(405)
-      .json({ error: `Incorrect Method: ${req.method} (GET Supported)` });
-    // return Response.json(
-    //   { error: `Incorrect Method: ${req.method} (GET Supported)` },
-    //   {
-    //     status: 405,
-    //   }
-    // );
+    return NextResponse.json(
+      { error: `Incorrect Method: ${req.method} (GET Supported)` },
+      {
+        status: 405,
+      }
+    );
   }
 }
