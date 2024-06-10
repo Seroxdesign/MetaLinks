@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import { ethers } from "ethers";
 import type { Database } from "@/types/supabase";
 import { z } from "zod";
+import { NextApiResponse } from "next";
 
 const SUPABASE_TABLE_USERS = "users";
 
@@ -17,7 +18,7 @@ const reqBody = z.object({
   nonce: z.number(),
 });
 
-export async function POST(request: Request) {
+export async function POST(request: Request, res: NextApiResponse) {
   const req = await request.json();
   const { signedMessage, address, nonce } = reqBody.parse(req);
   console.log("address.address", address, signedMessage);
@@ -28,12 +29,15 @@ export async function POST(request: Request) {
   console.log("signerAddress", signerAddress);
 
   if (signerAddress.toLowerCase() !== address.toLowerCase()) {
-    return Response.json(
-      { message: "The message was NOT signed by the expected address" },
-      {
-        status: 400,
-      }
-    );
+    return res
+      .status(400)
+      .json({ message: "The message was NOT signed by the expected address" });
+    // return Response.json(
+    //   { message: "The message was NOT signed by the expected address" },
+    //   {
+    //     status: 400,
+    //   }
+    // );
   }
 
   const { data } = await supabase
@@ -42,13 +46,19 @@ export async function POST(request: Request) {
     .eq("address", address)
     .single();
 
-  if (data?.auth && typeof data.auth === "object" && "genNonce" in data.auth && data?.auth?.genNonce !== nonce) {
-    return Response.json(
-      { message: "The nonce does not match." },
-      {
-        status: 400,
-      }
-    );
+  if (
+    data?.auth &&
+    typeof data.auth === "object" &&
+    "genNonce" in data.auth &&
+    data?.auth?.genNonce !== nonce
+  ) {
+    return res.status(400).json({ message: "The nonce does not match." });
+    // return Response.json(
+    //   { message: "The nonce does not match." },
+    //   {
+    //     status: 400,
+    //   }
+    // );
   }
 
   // console.log("data", data);
@@ -61,12 +71,13 @@ export async function POST(request: Request) {
     });
     if (error) {
       console.log("error creating user", error.status, error.message);
-      return Response.json(
-        { error: error.message },
-        {
-          status: 500,
-        }
-      );
+      return res.status(500).json({ error });
+      // return Response.json(
+      //   { error: error.message },
+      //   {
+      //     status: 500,
+      //   }
+      // );
     }
     authUser = userData.user;
   } else {
@@ -77,12 +88,13 @@ export async function POST(request: Request) {
 
     if (error) {
       console.log("error getting user", error.status, error.message);
-      return Response.json(
-        { error },
-        {
-          status: 500,
-        }
-      );
+      return res.status(500).json({ error });
+      // return Response.json(
+      //   { error },
+      //   {
+      //     status: 500,
+      //   }
+      // );
     }
     authUser = userData.user;
   }
@@ -116,10 +128,11 @@ export async function POST(request: Request) {
     { expiresIn: 60 * 2 }
   );
 
-  return Response.json(
-    { token },
-    {
-      status: 200,
-    }
-  );
+  return res.status(200).json({ token });
+  // return Response.json(
+  //   { token },
+  //   {
+  //     status: 200,
+  //   }
+  // );
 }

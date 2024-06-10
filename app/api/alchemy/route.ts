@@ -2,6 +2,7 @@ import { isAddress } from "@ethersproject/address";
 import { Alchemy, Network } from "alchemy-sdk";
 
 import { AlchemyMultichainClient } from "@/lib/alchemy-multichain-client";
+import { NextApiResponse } from "next";
 
 const config = {
   apiKey: process.env.NEXT_PUBLIC_ALCHEMY_MAINNET,
@@ -19,17 +20,13 @@ const overrides = {
 
 const alchemy = new AlchemyMultichainClient(config, overrides);
 
-export async function GET(req: Request) {
+export async function GET(req: Request, res: NextApiResponse) {
   const { searchParams } = new URL(req.url);
   const owner = searchParams.get("owner");
 
   if (!owner) {
-    return Response.json(
-      { error: `Missing Owner Address` },
-      {
-        status: 400,
-      }
-    );
+    return res.status(400).json({ error: `Missing Owner Address` });
+    // return Response.json({ error: `Missing Owner Address` }, { status: 400 });
   }
 
   if (isAddress(owner as string)) {
@@ -50,26 +47,31 @@ export async function GET(req: Request) {
     } catch (err) {
       const status = 500;
       const msg = (err as Error).message;
-      return Response.json(
-        { error: msg },
-        {
-          status,
-        }
-      );
+      return res.status(status).json({ error: msg });
+      // return Response.json(
+      //   { error: msg },
+      //   {
+      //     status,
+      //   }
+      // );
     }
   } else if (!isAddress(owner as string)) {
-    return Response.json(
-      { error: `Invalid Owner Address` },
-      {
-        status: 400,
-      }
-    );
+    return res.status(400).json({ error: "Invalid Owner Address" });
+    // return Response.json(
+    //   { error: `Invalid Owner Address` },
+    //   {
+    //     status: 400,
+    //   }
+    // );
   } else {
-    return Response.json(
-      { error: `Incorrect Method: ${req.method} (GET Supported)` },
-      {
-        status: 405,
-      }
-    );
+    return res
+      .status(405)
+      .json({ error: `Incorrect Method: ${req.method} (GET Supported)` });
+    // return Response.json(
+    //   { error: `Incorrect Method: ${req.method} (GET Supported)` },
+    //   {
+    //     status: 405,
+    //   }
+    // );
   }
 }
