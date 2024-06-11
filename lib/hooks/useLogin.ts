@@ -20,10 +20,10 @@ export const useLogin = () => {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const { toast } = useToast();
 
-
   const checkLoggedIn = useCallback(() => {
     const token = Cookies.get("supabasetoken");
-    if (!token) {
+
+    if (!token || token === "undefined") {
       // Prompt the user to log in or sign up.
       setIsLoggedIn(false);
       return false;

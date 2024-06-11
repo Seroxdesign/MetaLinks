@@ -6,7 +6,6 @@ import SubmitLinksSection from "./SubmitLinksSection";
 import UserMetaDetailsSection from "./UserMetaDetailsSection";
 import { BottomGradient } from "./GradiantComponents";
 import { cn } from "@/lib/utils";
-import { useConnectWallet } from "@/lib/hooks/useConnectWallet";
 import { Form } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -67,15 +66,13 @@ type TuploadImagesInput = {
 };
 
 const ProfileCreationForm = ({
-  // address,
   enableEditing = false,
 }: {
-  // address?: string;
   enableEditing?: boolean;
 }) => {
   const [isLoading, setIsLoading] = useState(false);
-  const { isConnected, handleConnectWallet } = useConnectWallet();
-  const { address, chainId } = useAccount();
+
+  const { address } = useAccount();
 
   const { toast } = useToast();
   const router = useRouter();
@@ -94,12 +91,8 @@ const ProfileCreationForm = ({
     "userDetails"
   );
 
-  // console.log({ userProfile, isProfileLoading, address, enableEditing });
-
   const fillDefaultValues =
     address && enableEditing && userProfile && !isProfileLoading;
-
-  console.log({ fillDefaultValues });
 
   const form = useForm<TFormSchema>({
     resolver: zodResolver(formSchema),
@@ -131,13 +124,11 @@ const ProfileCreationForm = ({
 
   const formValues = form.getValues();
 
-  console.log("formValues:", formValues);
-
   const uploadImageToIPFS = async ({
     profileImage,
     backgroundImage,
     links,
-  }: TuploadImagesInput) => {
+  }: TuploadImagesInput): Promise<TuploadImagesRes> => {
     const response: TuploadImagesRes = {
       profileImageIPFS: "",
       backgroundImageIPFS: undefined,
@@ -174,7 +165,7 @@ const ProfileCreationForm = ({
             results.push({ ...link, icon: undefined });
           }
         } else {
-          results.push({ ...link, icon: undefined });
+          results.push({ ...link, icon: link.icon ?? undefined });
         }
       }
       response.links = results;
@@ -187,6 +178,7 @@ const ProfileCreationForm = ({
     try {
       setIsLoading(true);
       const loggedIn = await checkLoggedIn();
+
       let userAddress;
       if (!loggedIn) {
         userAddress = await login();
@@ -200,9 +192,15 @@ const ProfileCreationForm = ({
         links: linksArr,
       } = enableEditing
         ? {
-            profileImageIPFS: profileImage,
-            backgroundImageIPFS: backgroundImage,
-            links,
+            profileImageIPFS:
+              typeof profileImage === "string" ? profileImage : "",
+            backgroundImageIPFS:
+              typeof backgroundImage === "string" ? backgroundImage : "",
+            links: links.map((link) => ({
+              name: link.name,
+              url: link.url,
+              icon: typeof link.icon === "string" ? link.icon : undefined,
+            })),
           }
         : await uploadImageToIPFS({ backgroundImage, profileImage, links });
 
@@ -228,6 +226,8 @@ const ProfileCreationForm = ({
       setIsLoading(false);
     } catch (error) {
       console.log("error", error);
+      setErrorMsg("Failed to create profile. Please try again.");
+      setIsLoading(false);
     }
   };
 
