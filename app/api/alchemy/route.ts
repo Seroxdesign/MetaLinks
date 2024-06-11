@@ -2,6 +2,7 @@ import { isAddress } from "@ethersproject/address";
 import { Alchemy, Network } from "alchemy-sdk";
 
 import { AlchemyMultichainClient } from "@/lib/alchemy-multichain-client";
+import { NextResponse, NextRequest } from "next/server";
 
 const config = {
   apiKey: process.env.NEXT_PUBLIC_ALCHEMY_MAINNET,
@@ -19,16 +20,14 @@ const overrides = {
 
 const alchemy = new AlchemyMultichainClient(config, overrides);
 
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const owner = searchParams.get("owner");
 
   if (!owner) {
-    return Response.json(
+    return NextResponse.json(
       { error: `Missing Owner Address` },
-      {
-        status: 400,
-      }
+      { status: 400 }
     );
   }
 
@@ -46,11 +45,12 @@ export async function GET(req: Request) {
         .forNetwork(Network.OPT_MAINNET)
         .nft.getNftsForOwner(owner as string, { pageSize: 5 });
 
-      return Response.json({ mainnetNfts, maticNfts, optimismNfts });
+      return NextResponse.json({ mainnetNfts, maticNfts, optimismNfts });
     } catch (err) {
       const status = 500;
       const msg = (err as Error).message;
-      return Response.json(
+
+      return NextResponse.json(
         { error: msg },
         {
           status,
@@ -58,14 +58,14 @@ export async function GET(req: Request) {
       );
     }
   } else if (!isAddress(owner as string)) {
-    return Response.json(
+    return NextResponse.json(
       { error: `Invalid Owner Address` },
       {
         status: 400,
       }
     );
   } else {
-    return Response.json(
+    return NextResponse.json(
       { error: `Incorrect Method: ${req.method} (GET Supported)` },
       {
         status: 405,

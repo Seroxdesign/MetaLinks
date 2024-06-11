@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import { ethers } from "ethers";
 import type { Database } from "@/types/supabase";
 import { z } from "zod";
+import { NextRequest, NextResponse } from "next/server";
 
 const SUPABASE_TABLE_USERS = "users";
 
@@ -17,7 +18,7 @@ const reqBody = z.object({
   nonce: z.number(),
 });
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   const req = await request.json();
   const { signedMessage, address, nonce } = reqBody.parse(req);
   console.log("address.address", address, signedMessage);
@@ -28,7 +29,7 @@ export async function POST(request: Request) {
   console.log("signerAddress", signerAddress);
 
   if (signerAddress.toLowerCase() !== address.toLowerCase()) {
-    return Response.json(
+    return NextResponse.json(
       { message: "The message was NOT signed by the expected address" },
       {
         status: 400,
@@ -42,8 +43,13 @@ export async function POST(request: Request) {
     .eq("address", address)
     .single();
 
-  if (data?.auth && typeof data.auth === "object" && "genNonce" in data.auth && data?.auth?.genNonce !== nonce) {
-    return Response.json(
+  if (
+    data?.auth &&
+    typeof data.auth === "object" &&
+    "genNonce" in data.auth &&
+    data?.auth?.genNonce !== nonce
+  ) {
+    return NextResponse.json(
       { message: "The nonce does not match." },
       {
         status: 400,
@@ -61,7 +67,8 @@ export async function POST(request: Request) {
     });
     if (error) {
       console.log("error creating user", error.status, error.message);
-      return Response.json(
+
+      return NextResponse.json(
         { error: error.message },
         {
           status: 500,
@@ -77,7 +84,8 @@ export async function POST(request: Request) {
 
     if (error) {
       console.log("error getting user", error.status, error.message);
-      return Response.json(
+
+      return NextResponse.json(
         { error },
         {
           status: 500,
@@ -116,7 +124,7 @@ export async function POST(request: Request) {
     { expiresIn: 60 * 2 }
   );
 
-  return Response.json(
+  return NextResponse.json(
     { token },
     {
       status: 200,
