@@ -1,37 +1,42 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import SubmitLinksSection from "./SubmitLinksSection";
 import UserMetaDetailsSection from "./UserMetaDetailsSection";
 import { BottomGradient } from "./GradiantComponents";
 import { cn } from "@/lib/utils";
-import { useConnectWallet } from "@/lib/hooks/useConnectWallet";
 import { Form } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useAccount } from "wagmi";
 import { useLogin } from "@/lib/hooks/useLogin";
 import { useSupabase } from "@/app/providers/supabase";
 import { useW3upClient } from "@/lib/useW3upClient";
 import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
+import { useGetUserProfile } from "@/lib/hooks/useGetUserProfile";
+import { useAccount } from "wagmi";
 
 const formSchema = z.object({
-  username: z.string().min(4, "username should be atlease 4 characters"),
+  username: z.string().min(4, "username should be at least 4 characters"),
   bio: z.string().optional().default(""),
-  profileImage: z.custom<File>((v) => v instanceof File, {
-    message: "Profile Image is required",
-  }),
+  profileImage: z.custom<File | string | null>(
+    (v) => v instanceof File || typeof v === "string",
+    {
+      message: "Profile Image is required",
+    }
+  ),
   backgroundImage: z
-    .custom<File>((v) => v instanceof File)
+    .custom<File | string | null>(
+      (v) => v instanceof File || typeof v === "string"
+    )
     .optional()
     .nullable(),
   links: z.array(
     z.object({
       icon: z
-        .custom<File>((v) => v instanceof File)
+        .custom<File | null>((v) => v instanceof File)
         .optional()
         .nullable(),
       name: z.string(),
@@ -60,14 +65,23 @@ type TuploadImagesInput = {
   links: TFormSchema["links"];
 };
 
-const ProfileCreationForm = () => {
+const ProfileCreationForm = ({
+  enableEditing = false,
+}: {
+  enableEditing?: boolean;
+}) => {
   const [isLoading, setIsLoading] = useState(false);
-  // const { isConnected, handleConnectWallet } = useConnectWallet();
-  const { address, chainId } = useAccount();
+
+  const { address } = useAccount();
+
   const { toast } = useToast();
   const router = useRouter();
 
   const w3storage = useW3upClient();
+
+  const { userProfile, isProfileLoading } = useGetUserProfile({
+    address: enableEditing && address ? address : null,
+  });
 
   const [errorMsg, setErrorMsg] = useState<string | undefined>();
   const { supabase } = useSupabase();
@@ -77,12 +91,15 @@ const ProfileCreationForm = () => {
     "userDetails"
   );
 
+  const fillDefaultValues =
+    address && enableEditing && userProfile && !isProfileLoading;
+
   const form = useForm<TFormSchema>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       username: "",
       bio: "",
-      profileImage: undefined,
+      profileImage: null,
       backgroundImage: null,
       links: [
         {
@@ -94,33 +111,49 @@ const ProfileCreationForm = () => {
     },
   });
 
+  useEffect(() => {
+    if (!fillDefaultValues) {
+      return;
+    }
+    form.setValue("username", userProfile?.username ?? "");
+    form.setValue("bio", userProfile?.bio ?? "");
+    form.setValue("profileImage", userProfile?.profileImageIPFS ?? null);
+    form.setValue("backgroundImage", userProfile?.backgroundImageIPFS ?? null);
+    form.setValue("links", userProfile?.links ?? []);
+  }, [fillDefaultValues]);
+
   const formValues = form.getValues();
 
   const uploadImageToIPFS = async ({
     profileImage,
     backgroundImage,
     links,
-  }: TuploadImagesInput) => {
+  }: TuploadImagesInput): Promise<TuploadImagesRes> => {
     const response: TuploadImagesRes = {
       profileImageIPFS: "",
       backgroundImageIPFS: undefined,
       links: [],
     };
 
-    const profileImageCID = await w3storage?.uploadFile(profileImage);
+    if (profileImage instanceof File) {
+      const profileImageCID = await w3storage?.uploadFile(profileImage);
+      response.profileImageIPFS = `ipfs://${profileImageCID}`;
+    } else if (typeof profileImage === "string") {
+      response.profileImageIPFS = profileImage;
+    }
 
-    response.profileImageIPFS = `ipfs://${profileImageCID}`;
-
-    if (!!backgroundImage) {
+    if (backgroundImage instanceof File) {
       const backgroundImageCID = await w3storage?.uploadFile(backgroundImage);
       response.backgroundImageIPFS = `ipfs://${backgroundImageCID}`;
+    } else if (typeof backgroundImage === "string") {
+      response.backgroundImageIPFS = backgroundImage;
     }
 
     if (!!links) {
       const results: TLink[] = [];
 
       for (const link of links) {
-        if (link.icon) {
+        if (link.icon instanceof File) {
           try {
             const cid = await w3storage?.uploadFile(link.icon);
             results.push({
@@ -132,7 +165,7 @@ const ProfileCreationForm = () => {
             results.push({ ...link, icon: undefined });
           }
         } else {
-          results.push({ ...link, icon: undefined });
+          results.push({ ...link, icon: link.icon ?? undefined });
         }
       }
       response.links = results;
@@ -145,6 +178,7 @@ const ProfileCreationForm = () => {
     try {
       setIsLoading(true);
       const loggedIn = await checkLoggedIn();
+
       let userAddress;
       if (!loggedIn) {
         userAddress = await login();
@@ -156,7 +190,19 @@ const ProfileCreationForm = () => {
         profileImageIPFS,
         backgroundImageIPFS,
         links: linksArr,
-      } = await uploadImageToIPFS({ backgroundImage, profileImage, links });
+      } = enableEditing
+        ? {
+            profileImageIPFS:
+              typeof profileImage === "string" ? profileImage : "",
+            backgroundImageIPFS:
+              typeof backgroundImage === "string" ? backgroundImage : "",
+            links: links.map((link) => ({
+              name: link.name,
+              url: link.url,
+              icon: typeof link.icon === "string" ? link.icon : undefined,
+            })),
+          }
+        : await uploadImageToIPFS({ backgroundImage, profileImage, links });
 
       const updatedUser = await supabase
         .from("users")
@@ -180,6 +226,8 @@ const ProfileCreationForm = () => {
       setIsLoading(false);
     } catch (error) {
       console.log("error", error);
+      setErrorMsg("Failed to create profile. Please try again.");
+      setIsLoading(false);
     }
   };
 
@@ -199,7 +247,10 @@ const ProfileCreationForm = () => {
           onSubmit={form.handleSubmit(handleFormSubmit)}
         >
           {step === "userDetails" ? (
-            <UserMetaDetailsSection onClickNextBtn={handleNextButtonClick} />
+            <UserMetaDetailsSection
+              onClickNextBtn={handleNextButtonClick}
+              editProfile={enableEditing}
+            />
           ) : (
             <>
               <SubmitLinksSection
@@ -212,7 +263,11 @@ const ProfileCreationForm = () => {
                 type="submit"
                 disabled={isLoading}
               >
-                {isLoading ? <i>Loading...</i> : <p>Create Profile</p>}
+                {isLoading ? (
+                  <i>Loading...</i>
+                ) : (
+                  <p>{enableEditing ? "Edit Profile" : "Create Profile"}</p>
+                )}
                 <BottomGradient />
               </button>
             </>
