@@ -1,7 +1,7 @@
-export const airStackQuery = `
+export const airStackQuery = /* GraphQL */ `
   query GetProfileInfo($identity: Identity!) {
     Domains(
-      input: {filter: {owner: { _eq: $identity }}, blockchain: ethereum}
+      input: { filter: { owner: { _eq: $identity } }, blockchain: ethereum }
     ) {
       Domain {
         tokenAddress
@@ -12,7 +12,7 @@ export const airStackQuery = `
         name
       }
     }
-    Wallet(input: { identity:  $identity, blockchain: ethereum }) {
+    Wallet(input: { identity: $identity, blockchain: ethereum }) {
       addresses
       primaryDomain {
         name
@@ -40,6 +40,40 @@ export const airStackQuery = `
         isXMTPEnabled
       }
     }
+    TokenBalances(
+      input: {
+        filter: {
+          owner: { _eq: $identity }
+          tokenType: { _in: [ERC721, ERC1155] }
+        }
+        blockchain: ethereum
+        limit: 50
+      }
+    ) {
+      TokenBalance {
+        tokenAddress
+        amount
+        formattedAmount
+        tokenType
+        tokenNfts {
+          address
+          tokenId
+          blockchain
+          contentValue {
+            image {
+              original
+            }
+          }
+        }
+      }
+      pageInfo {
+        nextCursor
+        prevCursor
+        hasNextPage
+        hasPrevPage
+      }
+    }
+
     farcasterSocials: Socials(
       input: {
         filter: { identity: { _eq: $identity }, dappName: { _eq: farcaster } }
@@ -83,7 +117,8 @@ export const airStackQuery = `
     ) {
       Social {
         twitterUserName
-        profileUrl        website
+        profileUrl
+        website
         isDefault
         blockchain
         dappName
@@ -112,6 +147,16 @@ export const airStackQuery = `
 
 // Define types for the query response
 export interface AirStackQueryResponse {
+  Domains: {
+    Domain: Array<{
+      tokenAddress: string;
+      tokenId: string;
+      avatar: string;
+      dappName: string;
+      dappSlug: string;
+      name: string;
+    }>;
+  };
   Wallet: {
     addresses: string[];
     primaryDomain: {
@@ -138,6 +183,30 @@ export interface AirStackQueryResponse {
     }>;
     xmtp: {
       isXMTPEnabled: boolean;
+    };
+  };
+  TokenBalances: {
+    TokenBalance: Array<{
+      tokenAddress: string;
+      amount: string;
+      formattedAmount: string;
+      tokenType: string;
+      tokenNfts: Array<{
+        address: string;
+        tokenId: string;
+        blockchain: string;
+        contentValue: {
+          image: {
+            original: string;
+          };
+        };
+      }>;
+    }>;
+    pageInfo: {
+      nextCursor: string | null;
+      prevCursor: string | null;
+      hasNextPage: boolean;
+      hasPrevPage: boolean;
     };
   };
   farcasterSocials: {
@@ -195,3 +264,78 @@ export interface AirStackQueryResponse {
     }>;
   };
 }
+
+export const GET_NFTS_QUERY = /* GraphQL */ `
+  query GetNFTs($Identity: [Identity!]) {
+    ethereum: TokenBalances(
+      input: {
+        filter: {
+          owner: { _in: $Identity }
+          tokenType: { _in: [ERC1155, ERC721] }
+        }
+        blockchain: ethereum
+        limit: 50
+      }
+    ) {
+      TokenBalance {
+        tokenAddress
+        amount
+        formattedAmount
+        tokenType
+        token {
+          isSpam
+          name
+        }
+        tokenNfts {
+          address
+          tokenId
+          blockchain
+          contentValue {
+            image {
+              original
+            }
+          }
+        }
+      }
+      pageInfo {
+        nextCursor
+        prevCursor
+        hasNextPage
+        hasPrevPage
+      }
+    }
+    base: TokenBalances(
+      input: {
+        filter: {
+          owner: { _in: $Identity }
+          tokenType: { _in: [ERC1155, ERC721] }
+        }
+        blockchain: base
+        limit: 50
+      }
+    ) {
+      TokenBalance {
+        tokenAddress
+        amount
+        formattedAmount
+        tokenType
+        tokenNfts {
+          address
+          tokenId
+          blockchain
+          contentValue {
+            image {
+              original
+            }
+          }
+        }
+      }
+      pageInfo {
+        nextCursor
+        prevCursor
+        hasNextPage
+        hasPrevPage
+      }
+    }
+  }
+`;

@@ -1,56 +1,105 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import SubmitLinksSection from "./SubmitLinksSection";
 import UserMetaDetailsSection from "./UserMetaDetailsSection";
-import { IconGhost } from "@tabler/icons-react";
 import { BottomGradient } from "./GradiantComponents";
 import { cn } from "@/lib/utils";
-import { useWeb3StorageUtilities } from "@/lib/hooks/useWeb3StorageUtilities";
-import { useConnectWallet } from "@/lib/hooks/useConnectWallet";
 import { Form } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useLogin } from "@/lib/hooks/useLogin";
+import { useSupabase } from "@/app/providers/supabase";
+import { useW3upClient } from "@/lib/useW3upClient";
+import { useToast } from "@/components/ui/use-toast";
+import { useRouter } from "next/navigation";
+import { useGetUserProfile } from "@/lib/hooks/useGetUserProfile";
 import { useAccount } from "wagmi";
 
 const formSchema = z.object({
-  username: z.string().min(4, "username should be atlease 4 characters"),
+  username: z.string().min(4, "username should be at least 4 characters"),
   bio: z.string().optional().default(""),
-  profileImage: z.custom<File>((v) => v instanceof File, {
-    message: "Profile Image is required",
-  }),
+  profileImage: z.custom<File | string | null>(
+    (v) => v instanceof File || typeof v === "string",
+    {
+      message: "Profile Image is required",
+    }
+  ),
   backgroundImage: z
-    .custom<File>((v) => v instanceof File)
+    .custom<File | string | null>(
+      (v) => v instanceof File || typeof v === "string"
+    )
     .optional()
     .nullable(),
   links: z.array(
     z.object({
-      icon: z.any().optional(),
+      icon: z
+        .custom<File | null>((v) => v instanceof File)
+        .optional()
+        .nullable(),
       name: z.string(),
       url: z.string(),
     })
   ),
 });
 
-const ProfileCreationForm = () => {
-  const { uploadFileToWeb3Storage, isUploading } = useWeb3StorageUtilities();
-  const { isConnected, handleConnectWallet } = useConnectWallet();
-  const { address, chainId } = useAccount();
+type TFormSchema = z.infer<typeof formSchema>;
+
+type TLink = {
+  name: string;
+  url: string;
+  icon?: string;
+};
+
+type TuploadImagesRes = {
+  profileImageIPFS: string;
+  backgroundImageIPFS?: string;
+  links: Array<TLink>;
+};
+
+type TuploadImagesInput = {
+  profileImage: TFormSchema["profileImage"];
+  backgroundImage?: TFormSchema["backgroundImage"];
+  links: TFormSchema["links"];
+};
+
+const ProfileCreationForm = ({
+  enableEditing = false,
+}: {
+  enableEditing?: boolean;
+}) => {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const { address } = useAccount();
+
+  const { toast } = useToast();
+  const router = useRouter();
+
+  const w3storage = useW3upClient();
+
+  const { userProfile, isProfileLoading } = useGetUserProfile({
+    address: enableEditing && address ? address : null,
+  });
 
   const [errorMsg, setErrorMsg] = useState<string | undefined>();
+  const { supabase } = useSupabase();
+  const { login, logout, isLoggedIn, checkLoggedIn, isLoggingIn } = useLogin();
 
   const [step, setStep] = useState<"userDetails" | "submitLinks">(
     "userDetails"
   );
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const fillDefaultValues =
+    address && enableEditing && userProfile && !isProfileLoading;
+
+  const form = useForm<TFormSchema>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       username: "",
       bio: "",
-      profileImage: undefined,
+      profileImage: null,
       backgroundImage: null,
       links: [
         {
@@ -62,36 +111,123 @@ const ProfileCreationForm = () => {
     },
   });
 
+  useEffect(() => {
+    if (!fillDefaultValues) {
+      return;
+    }
+    form.setValue("username", userProfile?.username ?? "");
+    form.setValue("bio", userProfile?.bio ?? "");
+    form.setValue("profileImage", userProfile?.profileImageIPFS ?? null);
+    form.setValue("backgroundImage", userProfile?.backgroundImageIPFS ?? null);
+    form.setValue("links", userProfile?.links ?? []);
+  }, [fillDefaultValues]);
+
   const formValues = form.getValues();
+
+  const uploadImageToIPFS = async ({
+    profileImage,
+    backgroundImage,
+    links,
+  }: TuploadImagesInput): Promise<TuploadImagesRes> => {
+    const response: TuploadImagesRes = {
+      profileImageIPFS: "",
+      backgroundImageIPFS: undefined,
+      links: [],
+    };
+
+    if (profileImage instanceof File) {
+      const profileImageCID = await w3storage?.uploadFile(profileImage);
+      response.profileImageIPFS = `ipfs://${profileImageCID}`;
+    } else if (typeof profileImage === "string") {
+      response.profileImageIPFS = profileImage;
+    }
+
+    if (backgroundImage instanceof File) {
+      const backgroundImageCID = await w3storage?.uploadFile(backgroundImage);
+      response.backgroundImageIPFS = `ipfs://${backgroundImageCID}`;
+    } else if (typeof backgroundImage === "string") {
+      response.backgroundImageIPFS = backgroundImage;
+    }
+
+    if (!!links) {
+      const results: TLink[] = [];
+
+      for (const link of links) {
+        if (link.icon instanceof File) {
+          try {
+            const cid = await w3storage?.uploadFile(link.icon);
+            results.push({
+              name: link.name,
+              url: link.url,
+              icon: cid ? `ipfs://${cid}` : undefined,
+            });
+          } catch (err) {
+            results.push({ ...link, icon: undefined });
+          }
+        } else {
+          results.push({ ...link, icon: link.icon ?? undefined });
+        }
+      }
+      response.links = results;
+    }
+
+    return response;
+  };
 
   const handleFormSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      if (!isConnected && !address) {
-        handleConnectWallet();
-        return;
+      setIsLoading(true);
+      const loggedIn = await checkLoggedIn();
+
+      let userAddress;
+      if (!loggedIn) {
+        userAddress = await login();
       }
 
-      const { backgroundImage, profileImage, links } = values;
+      const { backgroundImage, profileImage, links, username, bio } = values;
 
-      // Upload image to IPFS
-      const formImages = {
-        profileImage: profileImage,
-        backgroundImage: backgroundImage,
-        links: links.map((link) => ({
-          icon: link.icon,
-        })),
-      };
-      console.log("formImages",formImages)
+      const {
+        profileImageIPFS,
+        backgroundImageIPFS,
+        links: linksArr,
+      } = enableEditing
+        ? {
+            profileImageIPFS:
+              typeof profileImage === "string" ? profileImage : "",
+            backgroundImageIPFS:
+              typeof backgroundImage === "string" ? backgroundImage : "",
+            links: links.map((link) => ({
+              name: link.name,
+              url: link.url,
+              icon: typeof link.icon === "string" ? link.icon : undefined,
+            })),
+          }
+        : await uploadImageToIPFS({ backgroundImage, profileImage, links });
 
-      //TODO: FIX This later
-      // const cid = await uploadFileToWeb3Storage<typeof formImages>({
-      //   payload: formImages,
-      // });
-      // const ipfsUrl = `ipfs://${cid}`;
-      // console.log("ipfsUrl:", ipfsUrl);
-      // TODO: Create a DB entry in supabase (create tRPC endpoint)
+      const updatedUser = await supabase
+        .from("users")
+        .update({
+          username,
+          bio,
+          profileImageIPFS,
+          backgroundImageIPFS,
+          links: linksArr,
+        })
+        .eq("address", address ?? (userAddress as string))
+        .select();
+
+      toast({
+        title: "Success",
+        description: "User Profile Created ",
+      });
+
+      form.reset();
+      router.push(`/${address}`);
+      setIsLoading(false);
     } catch (error) {
       console.log("error", error);
+      setErrorMsg("Failed to create profile. Please try again.");
+      setIsLoading(false);
     }
   };
 
@@ -111,7 +247,10 @@ const ProfileCreationForm = () => {
           onSubmit={form.handleSubmit(handleFormSubmit)}
         >
           {step === "userDetails" ? (
-            <UserMetaDetailsSection onClickNextBtn={handleNextButtonClick} />
+            <UserMetaDetailsSection
+              onClickNextBtn={handleNextButtonClick}
+              editProfile={enableEditing}
+            />
           ) : (
             <>
               <SubmitLinksSection
@@ -122,18 +261,12 @@ const ProfileCreationForm = () => {
                   "bg-gradient-to-br mt-10 flex items-center justify-center gap-1 relative group/btn from-black dark:from-zinc-900 dark:to-zinc-900 to-neutral-600  dark:bg-zinc-800 w-full text-white rounded-md h-10 font-medium shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:shadow-[0px_1px_0px_0px_var(--zinc-800)_inset,0px_-1px_0px_0px_var(--zinc-800)_inset]"
                 )}
                 type="submit"
-                disabled={isUploading}
+                disabled={isLoading}
               >
-                {isUploading ? (
-                  <i>Uploading...</i>
+                {isLoading ? (
+                  <i>Loading...</i>
                 ) : (
-                  <>
-                    {isConnected ? (
-                      <p>Create Profile</p>
-                    ) : (
-                      <p>Connect Wallet</p>
-                    )}
-                  </>
+                  <p>{enableEditing ? "Edit Profile" : "Create Profile"}</p>
                 )}
                 <BottomGradient />
               </button>

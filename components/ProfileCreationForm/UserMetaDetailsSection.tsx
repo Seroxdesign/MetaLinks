@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/form";
 import { useFormContext } from "react-hook-form";
 import { useMediaUploadErrorHandler } from "@/lib/hooks/useMediaErrorHandler";
+import { toHTTP } from "@/utils/ipfs";
 
 export type TUserMetaDetails = {
   username: string;
@@ -23,8 +24,10 @@ export type TUserMetaDetails = {
 
 const UserMetaDetailsSection = ({
   onClickNextBtn,
+  editProfile = false,
 }: {
   onClickNextBtn: () => void;
+  editProfile?: boolean;
 }) => {
   const form = useFormContext();
   const { mediaUploadErrorHandler } = useMediaUploadErrorHandler();
@@ -83,43 +86,48 @@ const UserMetaDetailsSection = ({
         <FormField
           control={form.control}
           name="profileImage"
-          render={({ field }) => (
-            <FormItem className="mb-8 absolute top-[90%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 shadow-lg">
-              <div className="relative flex flex-col items-center">
-                <Image
-                  className="rounded-full w-[120px] h-[120px] border-white border-2"
-                  src={
-                    field.value
-                      ? URL.createObjectURL(field.value)
-                      : "/DefaultProfilePicture.png"
-                  }
-                  alt="Profile Picture"
-                  width={120}
-                  height={120}
-                />
-                <FormLabel className="absolute top-0 left-0 w-full h-full cursor-pointer">
-                  <FormControl>
-                    <Input
-                      type="file"
-                      className="hidden"
-                      {...field}
-                      value={undefined}
-                      onChange={(e) => {
-                        const isValid = mediaUploadErrorHandler({
-                          file: e.target.files && e.target.files[0],
-                          name: "profileImage",
-                        });
-                        if (!isValid) return;
-                        field.onChange(e.target.files && e.target.files[0]);
-                      }}
-                      accept={["jpeg", "jpg", "png"].join(", ")}
-                    />
-                  </FormControl>
-                </FormLabel>
-                <FormMessage className="mt-1" />
-              </div>
-            </FormItem>
-          )}
+          render={({ field }) => {
+            console.log("field", field.value);
+            return (
+              <FormItem className="mb-8 absolute top-[90%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 shadow-lg">
+                <div className="relative flex flex-col items-center">
+                  <Image
+                    className="rounded-full w-[120px] h-[120px] border-white border-2"
+                    src={
+                      editProfile
+                        ? toHTTP(field.value ?? "")
+                        : field.value
+                        ? URL.createObjectURL(field.value)
+                        : "/DefaultProfilePicture.png"
+                    }
+                    alt="Profile Picture"
+                    width={120}
+                    height={120}
+                  />
+                  <FormLabel className="absolute top-0 left-0 w-full h-full cursor-pointer">
+                    <FormControl>
+                      <Input
+                        type="file"
+                        className="hidden"
+                        {...field}
+                        value={undefined}
+                        onChange={(e) => {
+                          const isValid = mediaUploadErrorHandler({
+                            file: e.target.files && e.target.files[0],
+                            name: "profileImage",
+                          });
+                          if (!isValid) return;
+                          field.onChange(e.target.files && e.target.files[0]);
+                        }}
+                        accept={["jpeg", "jpg", "png"].join(", ")}
+                      />
+                    </FormControl>
+                  </FormLabel>
+                  <FormMessage className="mt-1" />
+                </div>
+              </FormItem>
+            );
+          }}
         />
       </div>
 

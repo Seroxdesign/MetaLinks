@@ -36,8 +36,8 @@ export const useConnectWallet = () => {
     isRejected,
     isLoading,
     handleConnectWallet: function () {
-      openSIWE();
-      openSwitchNetworks();
+       openSIWE();
+       openSwitchNetworks();
     },
     data,
   };

@@ -49,13 +49,22 @@ export function useCopy() {
   return { isCopied, copyToClipboard, resetCopyStatus };
 }
 
-function MoreOptionsDropdownMenu({ username }: { username?: string }) {
+function MoreOptionsDropdownMenu({
+  username,
+  address,
+  enableProfileEditing = true,
+}: {
+  username?: string | null;
+  address?: string | null;
+  enableProfileEditing?: boolean;
+}) {
   const router = useRouter();
+
   const { copyToClipboard, isCopied } = useCopy();
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
+      <DropdownMenuTrigger className="cursor-pointer" asChild>
         <button
           className="rounded-full text-black w-[35px] h-[35px] inline-flex items-center justify-center bg-white shadow-[0_2px_10px] shadow-blackA4 outline-none focus:shadow-[0_0_0_2px] focus:shadow-black"
           aria-label="More options"
@@ -68,6 +77,7 @@ function MoreOptionsDropdownMenu({ username }: { username?: string }) {
           onClick={() => {
             copyToClipboard(window.location.href);
           }}
+          className="cursor-pointer"
         >
           Copy to clipboard
           <DropdownMenuShortcut>
@@ -76,24 +86,26 @@ function MoreOptionsDropdownMenu({ username }: { username?: string }) {
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem
-            onClick={() => {
-              router.push(
-                username
-                  ? `https://metagame.wtf/player/${username}`
-                  : "https://metagame.wtf/players"
-              );
-            }}
-          >
-            Edit Profile
-            <DropdownMenuShortcut>
-              <Pencil1Icon />
-            </DropdownMenuShortcut>
-          </DropdownMenuItem>
+          {enableProfileEditing && (
+            <DropdownMenuItem
+              onClick={() => {
+                router.push(
+                  address ? `/${address}/edit-profile` : `/${address}`
+                );
+              }}
+              className="cursor-pointer"
+            >
+              Edit Profile
+              <DropdownMenuShortcut>
+                <Pencil1Icon />
+              </DropdownMenuShortcut>
+            </DropdownMenuItem>
+          )}
           <DropdownMenuItem
             onClick={() => {
               router.push("https://enter.metagame.wtf/");
             }}
+            className="cursor-pointer"
           >
             Create Profile
             <DropdownMenuShortcut>
@@ -106,6 +118,7 @@ function MoreOptionsDropdownMenu({ username }: { username?: string }) {
           onClick={() => {
             router.push("https://chat.metagame.wtf/");
           }}
+          className="cursor-pointer"
         >
           Join Discord
         </DropdownMenuItem>

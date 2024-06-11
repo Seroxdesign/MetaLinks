@@ -2,8 +2,6 @@
 
 import { ThemeProvider } from "@/components/theme-provider";
 import { Inter as FontSans } from "next/font/google";
-import { client } from "@/services/apollo";
-import { ApolloProvider } from "@apollo/client";
 import { cn } from "@/lib/utils";
 import "./globals.css";
 import Script from "next/script";
@@ -12,6 +10,8 @@ import { mainnet, polygon, sepolia } from "wagmi/chains";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ConnectKitProvider, getDefaultConfig } from "connectkit";
 import { AirstackProvider } from "@airstack/airstack-react";
+import SupabaseProvider from "@/app/providers/supabase";
+import { Toaster } from "@/components/ui/toaster"
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -59,7 +59,7 @@ export default function RootLayout({
 
   return (
     <html lang="en">
-      <ApolloProvider client={client}>
+      {/* <ApolloProvider client={client}> */}
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
@@ -88,17 +88,20 @@ export default function RootLayout({
               <AirstackProvider
                 apiKey={process.env.NEXT_PUBLIC_AIRSTACK_API_KEY ?? ""}
               >
-                <body
-                  className={cn("font-sans antialiased", fontSans.variable)}
-                >
-                  {/* <Navbar /> */}
-                  {children}
-                </body>
+                <SupabaseProvider>
+                  <body
+                    className={cn("font-sans antialiased", fontSans.variable)}
+                  >
+                    {/* <Navbar /> */}
+                    {children}
+                    <Toaster />
+                  </body>
+                </SupabaseProvider>
               </AirstackProvider>
             </ConnectKitProvider>
           </QueryClientProvider>
         </WagmiProvider>
-      </ApolloProvider>
+      {/* </ApolloProvider> */}
     </html>
   );
 }
