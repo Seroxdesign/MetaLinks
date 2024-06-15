@@ -1,11 +1,7 @@
 import { useSupabase } from "@/app/providers/supabase";
 import { Database } from "@/types/supabase";
 import { useState, useEffect, useCallback } from "react";
-import {
-  QueryResponse,
-  useAirStack,
-  useAirStackWithManualTrigger,
-} from "./useAirStack";
+import { QueryResponse, useAirStackWithManualTrigger } from "./useAirStack";
 import { SupabaseClient } from "@supabase/supabase-js";
 
 interface UserProfile {

@@ -1,14 +1,21 @@
 "use client";
+
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import IconSearch from "@/components/IconSearch";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { checkAndReturnAddress } from "@/utils/address";
 import ThreeDotsLoader from "./ThreeDotsLoader";
 import { useForm } from "react-hook-form";
 import { Form, FormField } from "./ui/form";
+import { useSupabase } from "@/app/providers/supabase";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+
+const schema = z.object({
+  searchQuery: z.string(),
+});
 
 const SearchProfile = ({
   val,
@@ -20,20 +27,21 @@ const SearchProfile = ({
   const [submitting, setSubmitting] = useState(false);
   const [userInputError, setUserInputError] = useState("");
   const router = useRouter();
+  const { supabase } = useSupabase();
 
-  const form = useForm({
+  const form = useForm<z.infer<typeof schema>>({
+    resolver: zodResolver(schema),
     defaultValues: {
       searchQuery: val ?? "",
     },
   });
 
-  const searchProfileBtnHandler = async () => {
+  const handleSearch = async (values: z.infer<typeof schema>) => {
     setSubmitting(true);
-    const searchQuery = form.getValues("searchQuery");
-    const address = await checkAndReturnAddress(searchQuery);
+    const { searchQuery } = values;
 
-    if (address) router.push(`/${address}`);
-    else setUserInputError("Please enter valid ENS or ETH address.");
+    router.push(`/search?query=${searchQuery}`);
+
     setSubmitting(false);
   };
 
@@ -47,7 +55,7 @@ const SearchProfile = ({
       <Form {...form}>
         <form
           className="z-50 flex justify-center items-center gap-2 md:flex-row w-full"
-          onSubmit={form.handleSubmit(searchProfileBtnHandler)}
+          onSubmit={form.handleSubmit(handleSearch)}
         >
           <FormField
             control={form.control}
@@ -56,7 +64,7 @@ const SearchProfile = ({
               <Input
                 type="text"
                 {...field}
-                placeholder="Enter ENS or ETH address"
+                placeholder="Enter ENS, ETH address or username"
                 className="rounded-xl w-[85%] md:w-[30rem] h-[2.5rem]"
                 onChange={(e) => {
                   field.onChange(e.target.value);

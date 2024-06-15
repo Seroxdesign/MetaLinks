@@ -1,36 +1,20 @@
 "use client";
-// TODO:
+
 import { useSearchParams } from "next/navigation";
 import SearchProfilesComponent from "@/components/SearchProfile";
-// import { useQuery } from "@apollo/client";
-// import { searchProfiles } from "@/services/apollo";
 import { HoverEffect } from "@/components/card-hover-effect";
 import { BackgroundBeams } from "@/components/background-beams";
-import { toHTTP } from "@/utils/ipfs";
 import { Suspense } from "react";
+import { useSearchByUsernameOrAddress } from "@/lib/hooks/useGetUserDetailsFromDatabase";
+
+import { ThreeDotsLoaderComponent } from "@/components/LoadingComponents";
 
 const SearchComponent = () => {
   const searchParams = useSearchParams();
-  const searchQuery = searchParams.get("query") ?? undefined;
-  // const { loading, error, data } = useQuery(searchProfiles, {
-  //   variables: { search: `%${searchQuery}%` },
-  // });
-  const loading = false;
-  const error = "";
-  const data = { player: [] };
+  const searchQuery = searchParams.get("query") ?? "";
+  const { data, isLoading } = useSearchByUsernameOrAddress(searchQuery);
 
-  const players = data?.player ?? [];
-  const formattedData = players.map((player: any) => {
-    const { profile } = player;
-    return {
-      name: profile.name,
-      description: profile.description,
-      username: profile.username,
-      imageUrl: toHTTP(profile?.profileImageURL ?? ""),
-      ethereumAddress: player.ethereumAddress,
-      href: `/${player.ethereumAddress}`,
-    };
-  });
+  if (isLoading || !data) return <ThreeDotsLoaderComponent />;
 
   return (
     <main>
@@ -38,7 +22,7 @@ const SearchComponent = () => {
         <SearchProfilesComponent val={searchQuery} />
       </div>
       <div className="max-w-5xl mx-auto px-8">
-        <HoverEffect items={formattedData} />
+        <HoverEffect items={data} />
       </div>
       <BackgroundBeams />
     </main>

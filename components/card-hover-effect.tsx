@@ -1,5 +1,6 @@
 "use client";
 
+import { User } from "@/lib/hooks/useGetUserDetailsFromDatabase";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
@@ -9,14 +10,7 @@ export const HoverEffect = ({
   items,
   className,
 }: {
-  items: {
-    name: string;
-    description: string;
-    href: string;
-    username: string;
-    imageUrl: string;
-    ethereumAddress: string;
-  }[];
+  items: User[];
   className?: string;
 }) => {
   let [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
@@ -30,8 +24,8 @@ export const HoverEffect = ({
     >
       {items.map((item, idx) => (
         <Link
-          href={item?.href}
-          key={item?.href}
+          href={item.href}
+          key={item.href}
           className="relative group  block p-2 h-full w-full"
           onMouseEnter={() => setHoveredIndex(idx)}
           onMouseLeave={() => setHoveredIndex(null)}
@@ -59,7 +53,7 @@ export const HoverEffect = ({
               <img
                 className="rounded-full h-20 w-20 border border-[12px] border-[rgba(255,255,255,0.04)]"
                 alt="Picture of the author"
-                src={item.imageUrl}
+                src={item.profileImageURL}
                 width={80}
                 height={80}
               />
