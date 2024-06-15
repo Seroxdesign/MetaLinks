@@ -15,8 +15,8 @@ import { useGetGitcoinPassportScore } from "@/lib/hooks/useGetGitcoinPassportSco
 import { useGetUserProfile } from "@/lib/hooks/useGetUserProfile";
 import { useGetNfts } from "@/lib/hooks/useGetNfts";
 import { BackgroundBeams } from "@/components/background-beams";
-import ThreeDotsLoader from "@/components/ThreeDotsLoader";
 import { useAccount } from "wagmi";
+import { ThreeDotsLoaderComponent } from "@/components/LoadingComponents";
 
 interface LinkCardProps {
   href: string;
@@ -66,13 +66,7 @@ const Page: React.FC = () => {
 
   const isLoading = isProfileLoading || isNFTLoading;
 
-  if (isLoading) {
-    return (
-      <div className="fixed inset-0 flex justify-center items-center">
-        <ThreeDotsLoader className="w-[80px] h-[46px]" />
-      </div>
-    );
-  }
+  if (isLoading) return <ThreeDotsLoaderComponent />;
 
   return (
     <>

@@ -9,6 +9,7 @@ import { checkAndReturnAddress } from "@/utils/address";
 import ThreeDotsLoader from "./ThreeDotsLoader";
 import { useForm } from "react-hook-form";
 import { Form, FormField } from "./ui/form";
+import { useSupabase } from "@/app/providers/supabase";
 
 const SearchProfile = ({
   val,
@@ -20,6 +21,7 @@ const SearchProfile = ({
   const [submitting, setSubmitting] = useState(false);
   const [userInputError, setUserInputError] = useState("");
   const router = useRouter();
+  const { supabase } = useSupabase();
 
   const form = useForm({
     defaultValues: {
@@ -30,10 +32,14 @@ const SearchProfile = ({
   const searchProfileBtnHandler = async () => {
     setSubmitting(true);
     const searchQuery = form.getValues("searchQuery");
-    const address = await checkAndReturnAddress(searchQuery);
+    const address = await checkAndReturnAddress({
+      inputAddressOrName: searchQuery,
+      supabase,
+    });
 
-    if (address) router.push(`/${address}`);
-    else setUserInputError("Please enter valid ENS or ETH address.");
+    if (Array.isArray(address)) router.push(`/search?query=${searchQuery}`);
+    else if (address && typeof address === "string") router.push(`/${address}`);
+    else setUserInputError("Please enter valid ENS, ETH address or username.");
     setSubmitting(false);
   };
 
@@ -56,7 +62,7 @@ const SearchProfile = ({
               <Input
                 type="text"
                 {...field}
-                placeholder="Enter ENS or ETH address"
+                placeholder="Enter ENS, ETH address or username"
                 className="rounded-xl w-[85%] md:w-[30rem] h-[2.5rem]"
                 onChange={(e) => {
                   field.onChange(e.target.value);
