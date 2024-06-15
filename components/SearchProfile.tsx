@@ -1,15 +1,21 @@
 "use client";
+
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import IconSearch from "@/components/IconSearch";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { checkAndReturnAddress } from "@/utils/address";
 import ThreeDotsLoader from "./ThreeDotsLoader";
 import { useForm } from "react-hook-form";
 import { Form, FormField } from "./ui/form";
 import { useSupabase } from "@/app/providers/supabase";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+
+const schema = z.object({
+  searchQuery: z.string(),
+});
 
 const SearchProfile = ({
   val,
@@ -23,23 +29,19 @@ const SearchProfile = ({
   const router = useRouter();
   const { supabase } = useSupabase();
 
-  const form = useForm({
+  const form = useForm<z.infer<typeof schema>>({
+    resolver: zodResolver(schema),
     defaultValues: {
       searchQuery: val ?? "",
     },
   });
 
-  const searchProfileBtnHandler = async () => {
+  const handleSearch = async (values: z.infer<typeof schema>) => {
     setSubmitting(true);
-    const searchQuery = form.getValues("searchQuery");
-    const address = await checkAndReturnAddress({
-      inputAddressOrName: searchQuery,
-      supabase,
-    });
+    const { searchQuery } = values;
 
-    if (Array.isArray(address)) router.push(`/search?query=${searchQuery}`);
-    else if (address && typeof address === "string") router.push(`/${address}`);
-    else setUserInputError("Please enter valid ENS, ETH address or username.");
+    router.push(`/search?query=${searchQuery}`);
+
     setSubmitting(false);
   };
 
@@ -53,7 +55,7 @@ const SearchProfile = ({
       <Form {...form}>
         <form
           className="z-50 flex justify-center items-center gap-2 md:flex-row w-full"
-          onSubmit={form.handleSubmit(searchProfileBtnHandler)}
+          onSubmit={form.handleSubmit(handleSearch)}
         >
           <FormField
             control={form.control}

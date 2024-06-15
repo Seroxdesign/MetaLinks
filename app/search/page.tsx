@@ -4,32 +4,17 @@ import { useSearchParams } from "next/navigation";
 import SearchProfilesComponent from "@/components/SearchProfile";
 import { HoverEffect } from "@/components/card-hover-effect";
 import { BackgroundBeams } from "@/components/background-beams";
-import { toHTTP } from "@/utils/ipfs";
 import { Suspense } from "react";
-import {
-  TUseFetchUserDetailsByUsername,
-  useFetchUserDetailsByUsername,
-} from "@/lib/hooks/useGetUserDetailsFromDatabase";
+import { useSearchByUsernameOrAddress } from "@/lib/hooks/useGetUserDetailsFromDatabase";
+
 import { ThreeDotsLoaderComponent } from "@/components/LoadingComponents";
 
 const SearchComponent = () => {
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get("query") ?? "";
-  const { data, isLoading } = useFetchUserDetailsByUsername(searchQuery);
+  const { data, isLoading } = useSearchByUsernameOrAddress(searchQuery);
 
-  if (isLoading) return <ThreeDotsLoaderComponent />;
-
-  const players = data ?? [];
-  const formattedData = players.map(
-    (profile: TUseFetchUserDetailsByUsername) => ({
-      name: profile.name,
-      description: profile.description,
-      username: profile.username,
-      imageUrl: toHTTP(profile?.profileImageURL ?? ""),
-      ethereumAddress: profile.ethereumAddress,
-      href: `/${profile.ethereumAddress}`,
-    })
-  );
+  if (isLoading || !data) return <ThreeDotsLoaderComponent />;
 
   return (
     <main>
@@ -37,7 +22,7 @@ const SearchComponent = () => {
         <SearchProfilesComponent val={searchQuery} />
       </div>
       <div className="max-w-5xl mx-auto px-8">
-        <HoverEffect items={formattedData} />
+        <HoverEffect items={data} />
       </div>
       <BackgroundBeams />
     </main>
