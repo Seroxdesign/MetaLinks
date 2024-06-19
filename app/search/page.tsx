@@ -16,8 +16,6 @@ const SearchComponent = () => {
 
   if (isLoading || !data) return <ThreeDotsLoaderComponent />;
 
-  console.log("data", data);
-
   return (
     <main>
       <div className="mt-16">

@@ -57,8 +57,6 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // console.log("data", data);
-
   let authUser;
   if (!data?.id) {
     const { data: userData, error } = await supabase.auth.admin.createUser({
@@ -112,7 +110,7 @@ export async function POST(request: NextRequest) {
     })
     .eq("address", address);
 
-  console.log("updateUsers", updateUsers);
+  // console.log("updateUsers", updateUsers);
 
   const token = jwt.sign(
     {
