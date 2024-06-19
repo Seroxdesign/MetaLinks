@@ -27,7 +27,6 @@ const SearchProfile = ({
   const [submitting, setSubmitting] = useState(false);
   const [userInputError, setUserInputError] = useState("");
   const router = useRouter();
-  const { supabase } = useSupabase();
 
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),

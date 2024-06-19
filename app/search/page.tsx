@@ -22,6 +22,11 @@ const SearchComponent = () => {
         <SearchProfilesComponent val={searchQuery} />
       </div>
       <div className="max-w-5xl mx-auto px-8">
+        {!data.length && (
+          <div className="font-medium mt-4 text-xl w-full text-center">
+            No Results Found
+          </div>
+        )}
         <HoverEffect items={data} />
       </div>
       <BackgroundBeams />
