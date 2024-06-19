@@ -4,6 +4,8 @@ import { useSupabase } from "@/app/providers/supabase";
 import { useState, useEffect } from "react";
 import { toHTTP } from "@/utils/ipfs";
 import { ethers } from "ethers";
+import { isAddress } from "viem";
+import { useRouter } from "next/navigation";
 
 export type User = {
   name: string;
@@ -20,6 +22,7 @@ export const useSearchByUsernameOrAddress = (searchQuery: string) => {
   const [error, setError] = useState<Error | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { supabase } = useSupabase();
+  const router = useRouter();
   const provider = new ethers.CloudflareProvider();
   useEffect(() => {
     const fetchData = async () => {
@@ -54,6 +57,14 @@ export const useSearchByUsernameOrAddress = (searchQuery: string) => {
             }))
           );
         } else {
+          const isSearchQueryAnAddress = isAddress(searchQuery);
+
+          if (isSearchQueryAnAddress) {
+            router.push(`/${searchQuery}`);
+          } else if (!!addressFromEns) {
+            router.push(`/${addressFromEns}`);
+          }
+
           setData([]);
         }
       } catch (err) {
