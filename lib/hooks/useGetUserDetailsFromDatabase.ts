@@ -3,6 +3,7 @@
 import { useSupabase } from "@/app/providers/supabase";
 import { useState, useEffect } from "react";
 import { toHTTP } from "@/utils/ipfs";
+import { ethers } from "ethers";
 
 export type User = {
   name: string;
@@ -19,7 +20,7 @@ export const useSearchByUsernameOrAddress = (searchQuery: string) => {
   const [error, setError] = useState<Error | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { supabase } = useSupabase();
-
+  const provider = new ethers.CloudflareProvider();
   useEffect(() => {
     const fetchData = async () => {
       if (!searchQuery) return;
@@ -27,10 +28,14 @@ export const useSearchByUsernameOrAddress = (searchQuery: string) => {
       setIsLoading(true);
       setError(null);
       try {
+        const addressFromEns = await provider.resolveName(searchQuery);
+
         const { data, error } = await supabase
           .from("users")
           .select()
-          .or(`username.ilike.%${searchQuery}%,address.ilike.%${searchQuery}%`);
+          .or(
+            `username.ilike.%${searchQuery}%,address.ilike.%${searchQuery}%,address.ilike.%${addressFromEns}`
+          );
 
         if (error) {
           console.log("err", error);

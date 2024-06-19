@@ -16,12 +16,17 @@ const SearchComponent = () => {
 
   if (isLoading || !data) return <ThreeDotsLoaderComponent />;
 
+  console.log("data", data);
+
   return (
     <main>
       <div className="mt-16">
         <SearchProfilesComponent val={searchQuery} />
       </div>
       <div className="max-w-5xl mx-auto px-8">
+        <div className="font-medium mt-4 text-xl w-full text-center">
+          No Results Found
+        </div>
         <HoverEffect items={data} />
       </div>
       <BackgroundBeams />
