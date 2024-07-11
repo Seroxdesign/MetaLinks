@@ -5,11 +5,11 @@ import { QueryResponse, useAirStackWithManualTrigger } from "./useAirStack";
 import { SupabaseClient } from "@supabase/supabase-js";
 
 interface UserProfile {
-  address: string;
-  username: string | null;
-  profileImageIPFS: string | null;
-  name: string | null;
-  bio: string | null;
+  address: string | undefined;
+  username: string | null | undefined;
+  profileImageIPFS: string | null | undefined;
+  name: string | null | undefined;
+  bio: string | null | undefined;
   backgroundImageIPFS?: string | null;
   links: { name: string; url: string }[];
 }
@@ -29,27 +29,27 @@ interface UseUserProfileReturn {
  * @returns The formatted user profile data.
  */
 const createProfileData = (data: QueryResponse["data"]): UserProfile => {
-  const website =
-    data?.farcasterSocials.Social?.[0].website ||
-    data?.lensSocials.Social?.[0].website ||
-    null;
-  const twitter =
-    data?.farcasterSocials.Social?.[0].twitterUserName ||
-    data?.lensSocials.Social?.[0].twitterUserName ||
-    null;
+  const farcasterSocials = data?.farcasterSocials?.Social?.[0];
+  const lensSocials = data?.lensSocials?.Social?.[0];
 
-  const links = [
-    {
+  const website = farcasterSocials?.website || lensSocials?.website || null;
+  const twitter =
+    farcasterSocials?.twitterUserName || lensSocials?.twitterUserName || null;
+
+  const links: { name: string; url: string }[] = [];
+
+  if (farcasterSocials?.profileName) {
+    links.push({
       name: "farcaster",
-      url: `https://warpcast.com/${data?.farcasterSocials.Social?.[0].profileName}`,
-    },
-    {
+      url: `https://warpcast.com/${farcasterSocials.profileName}`,
+    });
+  }
+  if (lensSocials?.profileName) {
+    links.push({
       name: "lens",
-      url: `https://hey.xyz/${
-        data?.lensSocials.Social?.[0].profileName.split("@")[1]
-      }`,
-    },
-  ];
+      url: `https://hey.xyz/${lensSocials.profileName.split("@")[1]}`,
+    });
+  }
 
   if (website) {
     links.push({
@@ -65,12 +65,14 @@ const createProfileData = (data: QueryResponse["data"]): UserProfile => {
     });
   }
 
+  console.log("data", data);
+
   return {
-    address: data?.Wallet?.addresses?.[0] as string,
-    username: data?.Wallet?.primaryDomain?.name as string,
-    profileImageIPFS: data?.farcasterSocials.Social?.[0].profileImage as string,
-    name: data?.farcasterSocials.Social?.[0].profileDisplayName as string,
-    bio: data?.farcasterSocials.Social?.[0].profileBio as string,
+    address: data?.Wallet?.addresses?.[0],
+    username: data?.Wallet?.primaryDomain?.name,
+    profileImageIPFS: data?.farcasterSocials?.Social?.[0]?.profileImage,
+    name: data?.farcasterSocials?.Social?.[0]?.profileDisplayName,
+    bio: data?.farcasterSocials?.Social?.[0]?.profileBio,
     links,
   };
 };
@@ -87,7 +89,6 @@ const createUserInSupabase = async (
   profileData: UserProfile
 ): Promise<{ data?: any; error?: string }> => {
   try {
-    console.log("address:", address);
     const data = await supabase.from("users").insert({
       address,
       username: profileData.username,
@@ -123,6 +124,8 @@ export const useGetUserProfile = ({
     fetchData: fetchAirStackData,
   } = useAirStackWithManualTrigger({ identity: address });
 
+  console.log("airStackData", airStackData);
+
   const getUserProfile = useCallback(async () => {
     if (!address) return;
 
@@ -157,10 +160,12 @@ export const useGetUserProfile = ({
     if (airStackData && !userProfile) {
       setIsProfileLoading(true);
       const profileData = createProfileData(airStackData);
-      setUserProfile(profileData);
+      if (profileData.address) {
+        setUserProfile(profileData);
+        // Create user in Supabase in the background
+        createUserInSupabase(address!, supabase, profileData);
+      }
       setIsProfileLoading(false);
-      // Create user in Supabase in the background
-      createUserInSupabase(address!, supabase, profileData);
     }
   }, [airStackData, userProfile]);
 
