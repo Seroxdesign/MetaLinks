@@ -85,7 +85,11 @@ const Page: React.FC = () => {
                 <img
                   className="rounded-full h-40 w-40 md:h-72 md:w-72 border border-[12px] border-[rgba(255,255,255,0.04)]"
                   alt="Picture of the author"
-                  src={toHTTP(userProfile?.profileImageIPFS ?? "")}
+                  src={
+                    userProfile?.profileImageIPFS
+                      ? toHTTP(userProfile?.profileImageIPFS)
+                      : "/DefaultProfilePicture.png"
+                  }
                   width={288}
                   height={288}
                 />
@@ -106,52 +110,60 @@ const Page: React.FC = () => {
                 {userProfile?.bio ?? ""}
               </p>
 
-              <Tabs defaultValue="links" className="w-full">
-                <TabsList className="flex items-center justify-center">
-                  <TabsTrigger value="links">Links</TabsTrigger>
-                  <TabsTrigger value="nfts">NFTs</TabsTrigger>
-                  <TabsTrigger value="donate">Donate</TabsTrigger>
-                  <TabsTrigger value="attestation">Attestation</TabsTrigger>
-                </TabsList>
-                <TabsContent value="links">
-                  <div className="w-full mt-8 flex flex-col items-center justify-center">
-                    {userProfile?.links?.map((link: any) => (
-                      <LinkCard
-                        key={link.name}
-                        href={link.url}
-                        title={link.name}
-                        image="/LinkDefaultIcon.svg"
-                      />
-                    ))}
-                  </div>
-                </TabsContent>
-                <TabsContent value="nfts">
-                  <div className="grid md:grid-cols-3 grid-cols-2 gap-3 max-w-96 place-self-center mx-auto mt-8">
-                    {isNFTLoading && <p>Loading...</p>}
-                    {!isNFTLoading && nfts.length === 0 && <p>No NFTs Found</p>}
-                    {nfts.map((nft: { image: string; address: string }) => {
-                      return (
-                        <Image
-                          key={nft.image}
-                          src={nft.image}
-                          alt="nft-item"
-                          className="h-auto w-full max-w-full rounded-md min-h-32"
-                          width={128}
-                          height={128}
+              {userProfile ? (
+                <Tabs defaultValue="links" className="w-full">
+                  <TabsList className="flex items-center justify-center">
+                    <TabsTrigger value="links">Links</TabsTrigger>
+                    <TabsTrigger value="nfts">NFTs</TabsTrigger>
+                    <TabsTrigger value="donate">Donate</TabsTrigger>
+                    <TabsTrigger value="attestation">Attestation</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="links">
+                    <div className="w-full mt-8 flex flex-col items-center justify-center">
+                      {userProfile?.links?.map((link: any) => (
+                        <LinkCard
+                          key={link.name}
+                          href={link.url}
+                          title={link.name}
+                          image="/LinkDefaultIcon.svg"
                         />
-                      );
-                    })}
-                  </div>
-                </TabsContent>
-                <TabsContent value="donate">
-                  <div className="w-full mt-8 flex items-center justify-center">
-                    <DonateCrypto ethereumAddress={address as `0x${string}`} />
-                  </div>
-                </TabsContent>
-                <TabsContent value="attestation">
-                  <Attestations address={address} />
-                </TabsContent>
-              </Tabs>
+                      ))}
+                    </div>
+                  </TabsContent>
+                  <TabsContent value="nfts">
+                    <div className="grid md:grid-cols-3 grid-cols-2 gap-3 max-w-96 place-self-center mx-auto mt-8">
+                      {isNFTLoading && <p>Loading...</p>}
+                      {!isNFTLoading && nfts.length === 0 && (
+                        <p>No NFTs Found</p>
+                      )}
+                      {nfts.map((nft: { image: string; address: string }) => {
+                        return (
+                          <Image
+                            key={nft.image}
+                            src={nft.image}
+                            alt="nft-item"
+                            className="h-auto w-full max-w-full rounded-md min-h-32"
+                            width={128}
+                            height={128}
+                          />
+                        );
+                      })}
+                    </div>
+                  </TabsContent>
+                  <TabsContent value="donate">
+                    <div className="w-full mt-8 flex items-center justify-center">
+                      <DonateCrypto
+                        ethereumAddress={address as `0x${string}`}
+                      />
+                    </div>
+                  </TabsContent>
+                  <TabsContent value="attestation">
+                    <Attestations address={address} />
+                  </TabsContent>
+                </Tabs>
+              ) : (
+                <p>No User Found with address {address}</p>
+              )}
             </div>
           </FadeIn>
         </Wrapper>
