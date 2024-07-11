@@ -72,7 +72,7 @@ const UserMetaDetailsSection = ({
                       if (!isValid) return;
                       field.onChange(e.target.files && e.target.files[0]);
                     }}
-                    accept={["jpeg", "jpg", "png"].join(", ")}
+                    accept="image/*"
                   />
                 </FormControl>
               </FormLabel>
@@ -87,7 +87,6 @@ const UserMetaDetailsSection = ({
           control={form.control}
           name="profileImage"
           render={({ field }) => {
-            console.log("field", field.value);
             return (
               <FormItem className="mb-8 absolute top-[90%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 shadow-lg">
                 <div className="relative flex flex-col items-center">
@@ -119,7 +118,7 @@ const UserMetaDetailsSection = ({
                           if (!isValid) return;
                           field.onChange(e.target.files && e.target.files[0]);
                         }}
-                        accept={["jpeg", "jpg", "png"].join(", ")}
+                        accept="image/*"
                       />
                     </FormControl>
                   </FormLabel>
